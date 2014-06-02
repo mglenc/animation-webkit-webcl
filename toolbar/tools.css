@@ -1,0 +1,501 @@
+/*
+Tools stylesheet
+
+Date: 14-06-2012
+Author: Michal Glenc
+*/
+/*Tools dialogs*/
+.ui-dialog {
+	position: absolute;
+	/*overflow: hidden;*/
+	border-radius: 3px;
+	padding: 0;
+	margin: 0;
+	outline: 0;
+}
+
+td.left-col {
+	width:48%;
+	margin-right: 2%;
+	vertical-align: top;
+}
+
+.ui-dialog .ui-dialog-titlebar  {
+	height: 20px;
+	border-top-left-radius: 3px;
+	border-top-right-radius: 3px;
+	background: url("./images/dialog_title_background.png");
+	color: white;
+	box-shadow: 0px 2px 5px #888888;
+	padding: 0;
+}
+
+
+span.ui-dialog-title {
+	display: block;
+	height: 20px;
+	margin-left: 5px;
+	text-indent: 52px;
+	overflow: hidden;
+	float: left;
+}
+
+.ui-dialog-titlebar-close {
+	float: right;
+	background-image: url("./images/dialog_title_close.png");
+	background-color: transparent;
+	border-style: none;
+	height: 20px;
+	width: 11px;
+	text-indent: 11px;
+	overflow: hidden;
+	margin-right: 5px;
+}
+
+/*Buttons and shapes dialog*/
+.tools.ui-dialog-content {
+	background: grey;
+	opacity: 1;
+	border-bottom-left-radius: 3px;
+	border-bottom-right-radius: 3px;
+	padding: 7px;
+}
+
+.shapes-dialog .ui-dialog-title {
+	background: url("./images/shapes_dialog_title.png") no-repeat;
+	width: 34px;
+}
+
+a.button {
+	height: 24px;
+	width: 24px;
+	text-indent: 24px;
+	white-space: nowrap;
+	overflow: hidden;
+	display: block;
+	cursor: pointer;
+}
+
+#shapes-dialog a.button {
+	float: left;
+	margin-right: 5px;
+}
+
+a.button#cube, a.button#cube:link, a.button#cube:visited {
+	background-image: url('./images/shapes_cube.png');
+}
+
+a.button#cube:hover {
+	background-image: url('./images/shapes_cube_on.png');
+}
+
+a.button#sphere, a.button#sphere:link, a.button#sphere:visited {
+	background-image: url('./images/shapes_sphere.png');
+}
+
+a.button#sphere:hover {
+	background-image: url('./images/shapes_sphere_on.png');
+}
+
+a.button#light, a.button#light:link, a.button#light:visited {
+	background-image: url('./images/shapes_light.png');
+}
+
+a.button#light:hover {
+	background-image: url('./images/shapes_light_on.png');
+}
+
+a.button#play, a.button#play:link, a.button#play:visited {
+	background-image: url('./images/animation_play.png');
+}
+
+a.button#play:hover {
+	background-image: url('./images/animation_play_on.png');
+}
+
+/*Small buttons*/
+a.button-small {
+	width: 17px;
+	height: 17px;
+	text-indent: 17px;
+	white-space: nowrap;
+	display: block;
+	overflow: hidden;
+	cursor: pointer;
+	margin: 0 3px;
+}
+
+a.button-small.add {
+	float: right;
+	background: url('./images/add.png') no-repeat bottom;
+}
+
+#vertices-panel a.button-small.add, #vertices-panel a.button-small.remove {
+	display: none;
+}
+
+a.button-small.remove {
+	float: right;
+	background: url('./images/remove.png') no-repeat bottom;
+}
+
+a.button-small.play {
+	background: url('./images/play.png') no-repeat bottom;
+}
+
+a.button-small.play {
+	float: left;
+}
+
+/*Properties dialog and panels and jqgrid*/
+.panel {
+	background-color: #424749;
+	color: white;
+	padding: 5px 3px 5px 3px;
+	border-radius: 3px;
+	margin-bottom: 5px;
+	position: relative;
+}
+
+.panel.last {
+	margin-bottom: 0;
+}
+
+.panel .ui-jqgrid-titlebar-close {
+	height: 6px;
+	width: 11px;
+	background: url('./images/panel_close.png') no-repeat;
+	outline: none;
+	padding: 0;
+	margin: 0;
+	margin-top: -2px;
+}
+
+.panel .ui-jqgrid-titlebar {
+	height: 17px;
+}
+
+.panel#vertices-panel {
+	width: 280px;
+}
+
+#properties-dialog table#vertices {
+	width: 100%;
+	color: white;
+	text-align: center;
+	border-style: none;
+}
+
+
+#properties-dialog table#vertices td {
+	border-style: none;
+	text-align: center;
+}
+
+.properties-dialog .ui-dialog-title {
+	background: url("./images/properties_dialog_title.png");
+	width: 48px;
+}
+
+/*scene properties*/
+#properties-dialog #scene-panel table {
+	width: 100%;
+}
+
+#properties-dialog #scene-panel table td {
+	padding: 1px;
+	height: 17px;
+}
+
+#properties-dialog #scene-panel table td.left-col {
+	width: 50%;
+	text-align: right;
+}
+
+#properties-dialog #scene-panel table td.right-col {
+	width: 50%;
+	text-align: left;
+}
+
+#properties-dialog #scene-panel table td.right-col input {
+	width: 85px;
+}
+
+#properties-dialog #scene-panel table td.right-col input#resx-input, #properties-dialog #scene-panel table td.right-col input#resy-input {
+	width: 35px;
+}
+
+/*light properties*/
+#properties-dialog #light-panel table {
+	width: 100%;
+}
+
+#properties-dialog #light-panel table td {
+	padding: 1px;
+	height: 17px;
+}
+
+#properties-dialog #light-panel table td.left-col {
+	width: 50%;
+	text-align: right;
+}
+
+#properties-dialog #light-panel table td.right-col {
+	width: 50%;
+	text-align: left;
+}
+
+#properties-dialog #light-panel table td.right-col input {
+	width: 85px;
+}
+
+#properties-dialog #light-panel table td.right-col input#light-x-input, #properties-dialog #light-panel table td.right-col input#light-y-input, #properties-dialog #light-panel table td.right-col input#light-z-input, #properties-dialog #light-panel table td.right-col input#light-r-input {
+	width: 35px;
+}
+
+/*sphere properties*/
+#properties-dialog #vertices-panel table.sphere-data {
+	width: 100%;
+}
+
+#properties-dialog #vertices-panel table.sphere-data td {
+	padding: 1px;
+	height: 17px;
+}
+
+#properties-dialog #vertices-panel table.sphere-data td.left-col {
+	width: 50%;
+	text-align: right;
+}
+
+#properties-dialog #vertices-panel table.sphere-data td.right-col {
+	width: 50%;
+	text-align: left;
+}
+
+#properties-dialog #vertices-panel table.sphere-data td.right-col input {
+	width: 85px;
+}
+
+#properties-dialog #vertices-panel table.sphere-data td.right-col input#sphere-x-input, #properties-dialog #vertices-panel table td.right-col input#sphere-y-input, #properties-dialog #vertices-panel table td.right-col input#sphere-z-input, #properties-dialog #vertices-panel table td.right-col input#sphere-r-input {
+	width: 35px;
+}
+
+/*shape color properties*/
+#properties-dialog #shape-color-panel table {
+	width: 100%;
+}
+
+#properties-dialog #shape-color-panel table td {
+	padding: 1px;
+}
+
+#properties-dialog #shape-color-panel table td {
+	padding: 1px;
+	height: 17px;
+}
+
+#properties-dialog #shape-color-panel table td.left-col {
+	width: 50%;
+	text-align: right;
+}
+
+#properties-dialog #shape-color-panel table td.right-col {
+	width: 50%;
+	text-align: left;
+}
+
+#properties-dialog #shape-color-panel table td.right-col input {
+	width: 35px;
+}
+
+table#vertices {
+	margin-bottom: 5px;
+}
+
+table#vertices div.up {
+	height: 6px;
+	width: 13px;
+	background: url('./images/order_change.png') no-repeat 0 0;
+	cursor: pointer;
+}
+
+table#vertices div.down {
+	margin-top: 1px;
+	height: 6px;
+	width: 13px;
+	background: url('./images/order_change.png') no-repeat 0 -7px;
+	cursor: pointer;
+}
+
+/*Animation dialog*/
+.animation-dialog .ui-dialog-title {
+	background: url("./images/animation_dialog_title.png");
+	width: 52px;
+}
+
+#animation-dialog .panel#animation-data table {
+	width: 170px;
+}
+
+#animation-dialog .panel#animation-data table td {
+	padding: 1px;
+}
+
+#animation-dialog .panel#animation-data table td {
+	padding: 1px;
+}
+
+#animation-dialog .panel#animation-data table td.left-col {
+	width: 70px;
+	text-align: right;
+}
+
+#animation-dialog .panel#animation-data table td.right-col {
+	width: 100px;
+	text-align: left;
+}
+
+#animation-dialog .panel#animation-data table td.right-col input {
+	width: 50px;
+}
+
+#animation-dialog .panel#animation-data table td.right-col input:focus {
+	outline: 0;
+	border: 1px solid #00aeef;
+}
+
+.panel#animation-list table#animations {
+	margin-bottom: 5px;
+}
+
+.panel#animation-list table#animations td {
+	text-align: center;
+	border-style: none;
+}
+
+.panel#animation-list table#animations tr {
+	cursor: pointer;
+}
+
+.panel#animation-list table#animations tr.selected-row {
+	background-color: white;
+	color: black;
+}
+
+.panel#animation-data td.right-col div.sample {
+	width: 50px;
+	height: 15px;
+	float: left;
+	margin-right: 7px;
+}
+
+/*Export dialog*/
+.export-dialog .ui-dialog-title {
+	background: url("./images/export_dialog_title.png");
+	width: 33px;
+}
+
+.export-dialog a.button#export-database {
+	width: 109px;
+	text-indent: 109px;
+	float: left;
+}
+
+.export-dialog a#export-database:link, .export-dialog a#export-database:visited {
+	background: url("./images/export_database.png");
+}
+
+.export-dialog a#export-database:hover, .export-dialog a#export-database:visited:hover {
+	background: url("./images/export_database_on.png");
+}
+
+.export-dialog a.button#download-animation {
+	width: 66px;
+	float: right;
+	text-indent: 66px;
+}
+
+.export-dialog a#download-animation:link, .export-dialog a#download-animation:visited {
+	background: url("./images/download.png");
+}
+
+.export-dialog a#download-animation:hover, .export-dialog a#download-animation:visited:hover {
+	background: url("./images/download_on.png");
+}
+
+.export-dialog #export-progressbar {
+	border: 1px solid #cccccc;
+	width: 100%;
+	height: 20px;
+	margin-top: 7px;
+}
+
+.export-dialog .ui-progressbar-value {
+	background-color: #cccccc;
+	height: 100%;
+}
+
+/*Color dialog*/
+.color-dialog .ui-dialog-title {
+	background: url("./images/color_dialog_title.png");
+	width: 26px;
+}
+
+/*Import dialog*/
+.import-dialog .ui-dialog-title {
+	background: url("./images/import_dialog_title.png");
+	width: 33px;
+}
+
+.import-dialog a.button {
+	width: 109px;
+	text-indent: 109px;
+}
+
+.import-dialog a#import-database:link, .import-dialog a#import-database:visited {
+	background: url("./images/import_database.png");
+}
+
+.import-dialog a#import-database:hover, .import-dialog a#import-database:visited:hover {
+	background: url("./images/import_database_on.png");
+}
+
+.import-dialog #import-database-panel {
+	width: 500px;
+	height: 215px;
+}
+
+.import-dialog #scenes-list {
+	height: 215px;
+}
+
+.import-dialog #scenes-list th, .import-dialog #scenes-list td {
+	border-style: none;
+	text-align: center;
+	cursor: pointer;
+}
+
+.import-dialog #scenes-list tr.ui-state-highlight {
+	background-color: white;
+	color: black;
+}
+
+.import-dialog #import-database-panel a.button-small.import {
+	width: 47px;
+	text-indent: 47px;
+	background: url('./images/import.png') no-repeat bottom;
+	margin-top: 10px;
+	margin-right: 8px;
+	float: right;
+}
+
+/*Settings dialog*/
+.settings-dialog .ui-dialog-title {
+	background: url("./images/settings_dialog_title.png");
+	width: 40px;
+}
+
+.settings-dialog #gpu-devices li, .settings-dialog #cpu-devices li {
+	list-style: none;
+}

@@ -1,0 +1,28 @@
+/*
+General js
+
+Date: 20-07-2012
+Author: Michal Glenc
+*/
+function refreshDropdown() {
+	//console.log("dropdown refresh");
+	$('div.dropdown div a.arrow-down').click(function() {
+		//getting ul
+		$(this).parent().next().fadeIn(150);
+	});
+	
+	$('div.dropdown ul li').click(function() {
+		//getting html
+		var chosenProperty = $(this).children('a').html();
+		$(this).parent().prev().children('a.arrow-down').html(chosenProperty);
+		$(this).parent().fadeOut(75);
+		
+		//refreshDropdown();
+	});
+}
+
+function initGeneral() {
+	//$("*").disableSelection();
+	refreshDropdown();
+}
+

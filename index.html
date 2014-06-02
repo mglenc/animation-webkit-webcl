@@ -1,0 +1,258 @@
+<!--
+Application index
+
+Date: 06-06-2012
+Author: Michal Glenc
+-->
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>WebCL 3D animation designer</title>
+		
+		<!--caching stuff-->
+		<meta http-equiv="cache-control" content="max-age=0" />
+		<meta http-equiv="cache-control" content="no-cache" />
+		<meta http-equiv="expires" content="0" />
+		<meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+		<meta http-equiv="pragma" content="no-cache" />
+		
+		<link rel="stylesheet" type="text/css" media="screen" href="general/ui.jqgrid.css" />
+		<link rel="stylesheet" type="text/css" href="general/colorpicker.css" />
+		
+		<link rel="stylesheet" type="text/css" href="./general/general.css" />
+		<link rel="stylesheet" type="text/css" href="./timeline/timeline.css" />
+		<link rel="stylesheet" type="text/css" href="./scene/scene.css" />
+		<link rel="stylesheet" type="text/css" href="./toolbar/toolbar.css" />
+		<link rel="stylesheet" type="text/css" href="./toolbar/tools.css" />
+		
+		<!--glMatrix lib-->
+		<script type="text/javascript" src="./general/glMatrix-0.9.5.min.js"></script>
+		
+		<!--fragment shader-->
+		<script id="shader-fs" type="x-shader/x-fragment">
+			precision lowp float;
+			
+			varying vec4 vColor;
+		
+			void main(void) {
+				gl_FragColor = vColor;
+			}
+		</script>
+		
+		<!--vertex shader-->
+		<script id="shader-vs" type="x-shader/x-vertex">
+			attribute vec3 aVertexPosition;
+			attribute vec4 aVertexColor;
+		
+			uniform mat4 uMVMatrix;
+			uniform mat4 uPMatrix;
+			
+			varying vec4 vColor;
+		
+			void main(void) {
+				gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+				vColor = aVertexColor;
+			}
+		</script>
+		
+		<!--libs-->
+		<script type="text/javascript" src="./general/jquery.js"></script>
+		<script type="text/javascript" src="./general/jquery-ui.min.js"></script>
+		<script type="text/javascript" src="./general/jquery.mousewheel.min.js"></script>
+		<script type="text/javascript" src="./general/jquery.ui.position.js"></script>
+		<script type="text/javascript" src="./general/jquery.contextMenu.js"></script>
+		<script type="text/javascript" src="./general/colorpicker.js"></script>
+		<script src="general/grid.locale-en.js" type="text/javascript"></script>
+		<script src="general/jquery.jqGrid.min.js" type="text/javascript"></script>
+		<!--end libs-->
+		
+		<!--ui stuff-->
+		<script type="text/javascript" src="./timeline/resizer.js"></script>
+		<script type="text/javascript" src="./scene/scene.js"></script>
+		<script type="text/javascript" src="./timeline/timeline.js"></script>
+		<script type="text/javascript" src="./toolbar/toolbar.js"></script>
+		<script type="text/javascript" src="./toolbar/tools.js"></script>
+		<script type="text/javascript" src="./general/general.js"></script>
+		<!--end ui stuff-->
+		
+		<!--cl raytracer-->
+		<script type="text/javascript" src="./raytracer/cl_common.js"></script>
+		<script type="text/javascript" src="./raytracer/cl_kernel.js"></script>
+		<script type="text/javascript" src="./raytracer/cl_raytracer.js"></script>
+		<!--end cl raytracer-->
+		
+		<!--gl outliner-->
+		<script type="text/javascript" src="./outliner/outliner.js"></script>
+		<!--end gl outliner-->
+		
+		<script type="text/javascript">
+			var locationURL = 'http://localhost/web3d/';
+		
+			$(function() {
+				initGeneral();
+				initResizer();
+				initToolbar();
+				
+				initOutliner();
+				
+				initScene();
+				initTools();
+			});
+		</script>
+	</head>
+	<body>
+		<div id="timeline">
+			<ul id="shapes-list">
+			</ul>
+			<div id="toolbar">
+				<ul>
+					<li id="shapes"><a>&nbsp;</a></li>
+					<li id="properties"><a>&nbsp;</a></li>
+					<li id="animation"><a>&nbsp;</a></li>
+					<!--<li id="camera"><a>&nbsp;</a></li>-->
+					<li id="export"><a>&nbsp;</a></li>
+					<li id="import"><a>&nbsp;</a></li>
+					<li id="settings"><a>&nbsp;</a></li>
+					<li id="log"><a>&nbsp;</a></li>
+				</ul>
+			</div>
+			<div id="resizer"></div>
+		</div>
+		
+		<!--Shapes dialog window-->
+		<div id="shapes-dialog" class="tools" title="Shapes">
+			<a class="button" id="cube" href="javascript:void" title="Cube">Cube</a>
+			<a class="button" id="sphere" href="javascript:void" title="Sphere">Sphere</a>
+			<a class="button" id="light" href="javascript:void" title="Light">Light</a>
+		</div>
+		
+		<!--Export dialog window-->
+		<div id="export-dialog" class="tools" title="Export">
+			<a class="button" id="export-database" href="javascript:void" title="Export to database">Export to database</a>
+			<a class="button inactive" id="download-animation" href="javasctipy:void" title="Download animation">Download animation</a>
+			<div class="clear"></div>
+			<div id="export-progressbar"></div>
+		</div>
+		
+		<!--Import dialog window-->
+		<div id="import-dialog" class="tools" title="Import">
+			<!--<a class="button" id="import-database" href="javascript:void" title="Import from database">Import from database</a>-->
+			<div class="panel last" id="import-database-panel">
+				<table id="scenes-list">
+					<tr>
+						<td></td>
+					</tr>
+				</table>
+				<a class="button-small import" hreaf="javascript: void" title="Import">Import</a>
+			</div>
+		</div>
+		
+		<!--Settings dialog window-->
+		<div id="settings-dialog" class="tools" title="Settings">
+			<div class="panel" id="draw-method-panel">
+				<table>
+					<td class="left-col">Draw method</td>
+					<td class="right-col">
+						<input type="radio" name="draw-method" value="outline" id="draw-method-outline" checked /> <label for="draw-method-outline">Outline (WebGL)</label><br />
+						<input type="radio" name="draw-method" value="render-cl" id="draw-method-render-cl" /> <label for="draw-method-render-cl">Raytrace (WebCL)</label>
+					</td>
+				</table>
+			</div>
+			<div class="panel last" id="device-panel">
+				<table>
+					<td class="left-col">WebCL devices</td>
+					<td class="right-col">
+						GPU devices:
+						<ul id="gpu-devices">
+						</ul>
+					
+						CPU devices:
+						<ul id="cpu-devices">
+						</div>
+					</td>
+				</table>
+			</div>
+		</div>
+		
+		<!--Log dialog window-->
+		<div id="log-dialog" class="tools" title="Log">
+			<div class="panel last" id="running-log-panel">
+				<div id="running-log" style="background-color: white; color: black; font-family: 'Courier New', serif;"></div>
+			</div>
+		</div>
+		
+		<!--Color dialog window-->
+		<div id="color-dialog" class="tools" title="Color">
+		</div>
+		
+		<!--Properties dialog window-->
+		<div id="properties-dialog" class="tools" title="Properties">
+		</div>
+		
+		<!--Export dialog window-->
+		<div id="animation-dialog" class="tools" title="Animation">
+			<div class="panel" id="animation-list">
+				
+			</div>
+			<div class="panel last" id="animation-data">
+				<table>
+					<tr class="property">
+						<td class="left-col">property</td>
+						<td class="right-col">
+							<div class="property dropdown">
+								<div><a href="javascript:void" class="arrow-down"></a></div>
+								<ul>
+									<li class="first"><a href="javascript:void">position</a></li>
+									<li><a href="javascript:void">ambient color</a></li>
+									<li><a href="javascript:void">specular color</a></li>
+									<li class="last"><a href="javascript:void">diffuse color</a></li>
+								</ul>
+							</div>
+						</td>
+					</tr>
+					<tr class="start-frame">
+						<td class="left-col">start frame:</td>
+						<td class="right-col"><input type="text" id="start-frame-input" /></td>
+					</tr>
+					<tr class="end-frame">
+						<td class="left-col">end frame:</td>
+						<td class="right-col"><input type="text" id="end-frame-input" /></td>
+					</tr>
+					<tr class="vector">
+						<td class="left-col">vector:</td>
+						<td class="right-col">
+							x: <input type="text" id="vector-x" /><br />
+							y: <input type="text" id="vector-y" /><br />
+							z: <input type="text" id="vector-z" />
+						</td>
+					</tr>
+					<tr class="acolor from">
+						<td class="left-col">from:</td>
+						<td class="right-col"><div class="sample from"></div></td>
+					</tr>
+					<tr class="acolor to">
+						<td class="left-col">to:</td>
+						<td class="right-col"><div class="sample to"></div><a href="javascript:void" class="button-small set" id="set-animation-acolor">Set ambient color</a></td>
+					</tr>
+					<tr class="scolor from">
+						<td class="left-col">from:</td>
+						<td class="right-col"><div class="sample from"></div></td>
+					</tr>
+					<tr class="scolor to">
+						<td class="left-col">to:</td>
+						<td class="right-col"><div class="sample to"></div><a href="javascript:void" class="button-small set" id="set-animation-scolor">Set specular color</a></td>
+					</tr>
+					<tr class="dcolor from">
+						<td class="left-col">from:</td>
+						<td class="right-col"><div class="sample from"></div></td>
+					</tr>
+					<tr class="dcolor to">
+						<td class="left-col">to:</td>
+						<td class="right-col"><div class="sample to"></div><a href="javascript:void" class="button-small set" id="set-animation-dcolor">Set diffuse color</a></td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<canvas id="scene"></canvas>
+	</body>
+</html>

@@ -1,0 +1,106 @@
+/*
+Toolbar stylesheet
+
+Date: 07-06-2012
+Author: Michal Glenc
+*/
+
+#toolbar {
+	width: 100%;
+	height: 30px;
+	position: absolute;
+	bottom: 7px;
+	left: 0;
+	background: url('./images/background.png') repeat-x;
+	overflow: hidden;
+	z-index: 2;
+}
+
+#toolbar ul {
+	margin: 0;
+	padding: 0;
+	
+	/*first vertical bar fix*/
+	margin-left: -1px;
+	
+	/*last vertical bar fix*/
+	border-right: 1px solid coral;
+}
+
+#toolbar li {
+	display: block;
+	float: left;
+	height: 30px;
+	width: 100px;
+	text-align: center;
+	margin: 0;
+	padding: 0;
+	font-size: 1.1em;
+	line-height: 2.2em;
+	color: white;
+	cursor: pointer;
+}
+
+#toolbar li a {
+	display: block;
+	height: 100%;
+	width: 100%;
+	cursor: pointer;
+	background: url('./images/toolbar.png') no-repeat black;
+}
+
+#toolbar li#shapes a:link, #toolbar li#shapes a:visited {
+	background-position: 0px 0px;
+}
+
+#toolbar li#shapes a:hover, #toolbar li#shapes a:visited:hover {
+	background-position: 0px -30px;
+}
+
+#toolbar li#camera a, #toolbar li#camera a:link, #toolbar li#camera a:visited {
+	background-position: -100px 0px;
+}
+
+#toolbar li#camera a:hover, #toolbar li#camera a:visited:hover {
+	background-position: -100px -30px;
+}
+
+#toolbar li#properties a, #toolbar li#properties a:link, #toolbar li#properties a:visited {
+	background-position: -200px 0px;
+}
+
+#toolbar li#properties a:hover, #toolbar li#properties a:visited:hover {
+	background-position: -200px -30px;
+}
+
+#toolbar li#export a, #toolbar li#export a:link, #toolbar li#export a:visited {
+	background-position: -300px 0px;
+}
+
+#toolbar li#export a:hover, #toolbar li#export a:visited:hover {
+	background-position: -300px -30px;
+}
+
+#toolbar li#import a, #toolbar li#import a:link, #toolbar li#import a:visited {
+	background-position: -500px 0px;
+}
+
+#toolbar li#import a:hover, #toolbar li#import a:visited:hover {
+	background-position: -500px -30px;
+}
+
+#toolbar li#animation a, #toolbar li#animation a:link, #toolbar li#animation a:visited {
+	background-position: -400px 0px;
+}
+
+#toolbar li#animation a:hover, #toolbar li#animation a:visited:hover {
+	background-position: -400px -30px;
+}
+
+#toolbar li#settings a, #toolbar li#import a:link, #toolbar li#settings a:visited {
+	background-position: -600px 0px;
+}
+
+#toolbar li#settings a:hover, #toolbar li#settings a:visited:hover {
+	background-position: -600px -30px;
+}
