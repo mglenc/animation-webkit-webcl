@@ -29,7 +29,7 @@ scene.glcolor.g = 0.1;
 scene.glcolor.b = 0.1;
 
 //original position: 0; 0; -9
-scene.zoomMatrix = [0,0,-9];
+scene.zoomMatrix = [0,0,-7];
 
 var canvasId = "scene";
 
@@ -208,17 +208,33 @@ function rotateHandleMouseMove(event) {
 	
 	var newX = event.clientX;
 	var newY = event.clientY;
-
-	var deltaX = newX - scene.lastMouseX;
 	
-	var newRotationMatrix = mat4.create();
-	mat4.identity(newRotationMatrix);
-	mat4.rotate(newRotationMatrix, degToRad(deltaX/5), [0, 1, 0]);
+	logMessage("Rotating scene, newX: " + newX + ", newY: " + newY);
 
-	var deltaY = newY - scene.lastMouseY;
-	mat4.rotate(newRotationMatrix, degToRad(deltaY/5), [1, 0, 0]);
+	var drawMethod = $('input[name="draw-method"]:checked').val();
+		
+	if(drawMethod == "outline") {
+		var deltaX = newX - scene.lastMouseX;
+	
+		var newRotationMatrix = mat4.create();
+		mat4.identity(newRotationMatrix);
+		mat4.rotate(newRotationMatrix, degToRad(deltaX/5), [0, 1, 0]);
 
-	mat4.multiply( newRotationMatrix,scene.rotationMatrix,scene.rotationMatrix);
+		var deltaY = newY - scene.lastMouseY;
+		mat4.rotate(newRotationMatrix, degToRad(deltaY/5), [1, 0, 0]);
+
+		mat4.multiply( newRotationMatrix,scene.rotationMatrix,scene.rotationMatrix);
+	} else if(drawMethod == "render-cl") {
+		var deltaX = newX - scene.lastMouseX;
+		var deltaY = newY - scene.lastMouseY;
+		
+		console.log("Old camera_x: " + camera_x + ", camera_y: " + camera_y);
+		
+		camera_x -= deltaX/100;
+		camera_y -= deltaY/100;
+		
+		console.log("New camera_x: " + camera_x + ", camera_y: " + camera_y);
+	}
 
 	scene.lastMouseX = newX
 	scene.lastMouseY = newY;
@@ -228,6 +244,8 @@ function rotateHandleMouseMove(event) {
 
 function zoomHandleMouseWheel(delta) {
 	scene.zoomMatrix[2] += delta;
+	
+	logMessage("Zooming scene matrix[2]: " + scene.zoomMatrix[2]);
 	
 	refreshScene();
 }

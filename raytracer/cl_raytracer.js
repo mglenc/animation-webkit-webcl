@@ -15,6 +15,9 @@ var clQueue;
 var clSrc;
 var clProgram;
 
+//view const - (0,0,0) in webgl is (0,0,20) in webcl
+var zConst = 20.0;
+
 function initRayTracer() {
 	initUI();
 	initWebCL();
@@ -75,7 +78,7 @@ function initDevices() {
 }
 
 function refreshCL() {
-	raytrace(true);
+	raytrace(false);
 }
 
 function initWebCL() {
@@ -121,7 +124,8 @@ function initWebCL() {
     
     console.log(devices);
     console.log(wgSize);*/
-    logMessage("Choosing device " + deviceType + " " + deviceIndex);
+    
+    raytrace(true);
 }
 
 function moveScene(dir){
@@ -338,10 +342,7 @@ function createPrimList(){
 function raytrace(refreshPrims) {
 	var deviceType = useDeviceType;
 	var deviceIndex = useDeviceIndex;
-	
-	//clearing log
-	clearLog();
-	
+		
 	//getting canvas
 	canvas = document.getElementById(canvasId);
 	
@@ -365,18 +366,17 @@ function raytrace(refreshPrims) {
 	if(refreshPrims) {
 		//loading primitives
 		createPrimList();
+		
+		camera_x = scene.zoomMatrix[0];
+		camera_y = scene.zoomMatrix[1];
+	}
 	
-		//camera default
-		camera_x = 0.0;
-		camera_y = 0.0;
-		camera_z = -7.0;
-	}	
+	//calculating camera zoom, it lives in other coordinate systems then objects
+	camera_z = -zConst - scene.zoomMatrix[2];	
 	
 	logMessage("Started raytrace...");
 	
-	try {
-		console.log(canvas.getContext("2d"));
-		
+	try {		
 		canvas.width = screenWidth;
 		canvas.height = screenHeight;
 		var canvasCtx = canvas.getContext("2d");

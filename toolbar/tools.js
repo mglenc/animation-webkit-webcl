@@ -2981,9 +2981,11 @@ function initSettings() {
 		
 		if(drawMethod == "render-cl") {
 			initWebCL();
+		} else if(drawMethod == "outline")  {
+			initWebGL();
 		}
 		
-		refreshScene();
+		initScene();		
 	});
 	
 	initDevices();

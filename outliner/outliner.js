@@ -274,8 +274,11 @@ function refreshOutline() {
 	}
 }
 
-function initWebGL() {
-	var canvasId = "scene";
+function initWebGL() {	
+	//removing and readding canvas element, cause of getContext returning null when called twice
+	$('#' + canvasId).remove();
+	$('body').append('<canvas id="scene"></canvas>');
+	
 	initGL(canvasId);
 	initShaders();
 	
