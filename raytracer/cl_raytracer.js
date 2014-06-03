@@ -72,28 +72,17 @@ function initDevices() {
 	$("input[name='device']").change(function() {
 		toggleDevice($(this).data('type'), $(this).data('index'));
 	});
-	
-	$("button#start-raytrace").click(function() {
-		//raytracing with refreshed prims
-		raytrace(true);
-		
-		//moveScene('Right');
-		//moveScene('Right');
-		//moveScene('Right');
-		
-		//moveView('Left');
-		//moveView('Left');
-		//moveView('Left');
-		
-	});
 }
 
 function refreshCL() {
-	initWebCL();
 	raytrace(true);
 }
 
 function initWebCL() {
+	//removing and readding canvas element, cause of getContext returning null when called twice
+	$('#' + canvasId).remove();
+	$('body').append('<canvas id="scene"></canvas>');
+
     var deviceType = useDeviceType;
     var deviceIndex = useDeviceIndex;
 
@@ -110,7 +99,7 @@ function initWebCL() {
     }
 
     try {
-        clSrc = WebCLCommon.loadKernel("./js/kernel.js");
+        clSrc = WebCLCommon.loadKernel("./raytracer/cl_kernel.js");
         if (clSrc === null) {
             console.log("No kernel named: raytracer_kerel");
             return;
@@ -353,12 +342,23 @@ function raytrace(refreshPrims) {
 	//clearing log
 	clearLog();
 	
-	//default values
-	viewport_x = 6.0;
-	viewport_y = 4.5;	
-	screenWidth = 800;
-	screenHeight = 600;
-	workItemSize = [1,1];
+	//getting canvas
+	canvas = document.getElementById(canvasId);
+	
+	logMessage("Canvas dimensions: " + $(canvas).width() + " x " + $(canvas).height());
+	
+	//default values	
+	screenWidth = $(canvas).width();
+	screenHeight = $(canvas).height();
+	
+	//auto filling values
+	//TO DO: separate window with width and height set in properties
+	viewport_x = screenWidth/100.0;
+	viewport_y = screenHeight/100.0;
+	
+	logMessage("Viewport dimensions: " + viewport_x + " x " + viewport_y);
+	
+	workItemSize = [16,8];
 	traceDepth = 5;
 	runCount = 1;
 	
@@ -375,8 +375,8 @@ function raytrace(refreshPrims) {
 	logMessage("Started raytrace...");
 	
 	try {
-		//getting canvas
-		canvas = document.getElementById(canvasId);
+		console.log(canvas.getContext("2d"));
+		
 		canvas.width = screenWidth;
 		canvas.height = screenHeight;
 		var canvasCtx = canvas.getContext("2d");
@@ -424,7 +424,7 @@ function raytrace(refreshPrims) {
 		clKernel.setArg(8, new Float32Array([parseFloat(viewport_y)]));
 		
 		clKernel.setArg(9, bufGlobalPrims);
-		clKernel.setArg(10, new Uint32Array([n_primitives]));
+		clKernel.setArg(10, new Int32Array([n_primitives]));
 		clKernel.setArg(11, new Uint32Array([bufSizeGlobalPrims]));
 		
 		//queue in clQueue

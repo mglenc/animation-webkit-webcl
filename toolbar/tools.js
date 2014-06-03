@@ -2973,6 +2973,19 @@ function initExport() {
 }
 
 function initSettings() {
+	//on change event for draw method
+	$("input[name='draw-method']").change(function() {
+		var drawMethod = $("input[name='draw-method']:checked").val();
+	
+		logMessage("Draw method set to: " + drawMethod);
+		
+		if(drawMethod == "render-cl") {
+			initWebCL();
+		}
+		
+		refreshScene();
+	});
+	
 	initDevices();
 }
 
