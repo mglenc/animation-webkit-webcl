@@ -668,26 +668,26 @@ function refreshProperties() {
 						'<td class="right-col"><a href="javascript:void" class="button-small set" id="set-light-acolor">Set ambient color</a></td>' +
 					'</tr>' +
 					//below parameters wont change anything for light
-					/*'<tr class="refl">' +
+					'<tr class="refl" style="display: none;">' +
 						'<td class="left-col">surface reflection: </td>' +
 						'<td class="right-col"><input type="text" id="light-refl-input" value="' + scene.shapes[selectedShapeId].refl + '" /></td>' +
 					'</tr>' +
-					'<tr class="refr">' +
+					'<tr class="refr" style="display: none;">' +
 						'<td class="left-col">material refraction: </td>' +
 						'<td class="right-col"><input type="text" id="light-refr-input" value="' + scene.shapes[selectedShapeId].refr + '" /></td>' +
 					'</tr>' +
-					'<tr class="refr_index">' +
+					'<tr class="refr_index" style="display: none;">' +
 						'<td class="left-col">refraction index: </td>' +
 						'<td class="right-col"><input type="text" id="light-refr-index-input" value="' + scene.shapes[selectedShapeId].refr_index + '" /></td>' +
 					'</tr>' +
-					'<tr class="diff">' +
+					'<tr class="diff" style="display: none;">' +
 						'<td class="left-col">surface diffuse: </td>' +
 						'<td class="right-col"><input type="text" id="light-diff-input" value="' + scene.shapes[selectedShapeId].diff + '" /></td>' +
 					'</tr>' +
-					'<tr class="spec">' +
+					'<tr class="spec" style="display: none;">' +
 						'<td class="left-col">surface specular: </td>' +
 						'<td class="right-col"><input type="text" id="light-spec-input" value="' + scene.shapes[selectedShapeId].spec + '" /></td>' +
-					'</tr>' +*/
+					'</tr>' +
 				'</table>');
 			$('a#set-light-acolor').click(function() {
 				$('.tools#color-dialog').dialog({

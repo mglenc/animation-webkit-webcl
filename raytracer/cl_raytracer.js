@@ -491,7 +491,7 @@ function raytrace(refreshPrims) {
 	
 	logMessage("Viewport dimensions: " + viewport_x + " x " + viewport_y);
 	
-	workItemSize = [16,8];
+	workItemSize = [1,1];
 	traceDepth = 5;
 	runCount = 1;
 	

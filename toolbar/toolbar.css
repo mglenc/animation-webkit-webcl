@@ -97,10 +97,18 @@ Author: Michal Glenc
 	background-position: -400px -30px;
 }
 
-#toolbar li#settings a, #toolbar li#import a:link, #toolbar li#settings a:visited {
+#toolbar li#settings a, #toolbar li#settings a:link, #toolbar li#settings a:visited {
 	background-position: -600px 0px;
 }
 
 #toolbar li#settings a:hover, #toolbar li#settings a:visited:hover {
 	background-position: -600px -30px;
+}
+
+#toolbar li#log a, #toolbar li#log a:link, #toolbar li#log a:visited {
+	background-position: -700px 0px;
+}
+
+#toolbar li#log a:hover, #toolbar li#log a:visited:hover {
+	background-position: -700px -30px;
 }

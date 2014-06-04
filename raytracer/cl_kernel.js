@@ -146,6 +146,86 @@ typedef struct {
 	Color transparency;
 } Ray;
 
+/*triangle raytracer*/
+//
+// Copyright 2009 Syoyo Fujita.
+//http://syoyo.wordpress.com/
+typedef struct _ray4_t
+{
+    float4 rox, roy, roz;
+    float4 rdx, rdy, rdz;
+    float4 t;
+} ray4_t;
+
+typedef struct _triangle4_t
+{
+    float4 v0x, v0y, v0z;
+    float4 e1x, e1y, e1z;
+    float4 e2x, e2y, e2z;
+} triangle4_t;
+
+typedef struct _triangle_t
+{
+    float v[3][4];  // (x,y,z,w) * 3
+} triangle_t;
+
+/*static inline float4
+mycross4(float4 a, float4 b, float4 c, float4 d)
+{
+    return ((a * c) - (b * d));
+}
+
+static inline float4
+mydot4(float4 ax, float4 ay, float4 az, float4 bx, float4 by, float4 bz)
+{
+    return (ax * bx + ay * by + az * bz);
+}
+
+static int4
+isect4(
+    float4 *t_out,
+    float4 *u_out,
+    float4 *v_out,
+    ray4_t ray,
+    triangle4_t tri)
+{
+    const float4 px = mycross4(tri.e2z, tri.e2y, ray.rdy, ray.rdz);
+    const float4 py = mycross4(tri.e2x, tri.e2z, ray.rdz, ray.rdx);
+    const float4 pz = mycross4(tri.e2y, tri.e2x, ray.rdx, ray.rdy);
+
+    const float4 sx = ray.rox - tri.v0x;
+    const float4 sy = ray.roy - tri.v0y;
+    const float4 sz = ray.roz - tri.v0z;
+
+    const float4 vone  = (float4)(1.0f);
+    const float4 vzero = (float4)(0.0f);
+    const float4 veps  = (float4)(1.0e-6f);
+
+    const float4 det = mydot4(px, py, pz, tri.e1x, tri.e1y, tri.e1z);
+    const float4 invdet = (float4)(1.0f) / det;
+
+
+    const float4 qx = mycross4(tri.e1z, tri.e1y, sy, sz);
+    const float4 qy = mycross4(tri.e1x, tri.e1z, sz, sx);
+    const float4 qz = mycross4(tri.e1y, tri.e1y, sx, sy);
+
+    const float4 u = mydot4(sx, sy, sz, px, py, pz) * invdet;
+    const float4 v = mydot4(ray.rdx, ray.rdy, ray.rdz, qx, qy, qz) * invdet;
+    const float4 t = mydot4(tri.e2x, tri.e2y, tri.e2z, qx, qy, qz) * invdet;
+
+    int4 mask = (fabs(det) > veps) & ((u+v)  vzero) & (v > vzero)
+              & (t > vzero) & (t < ray.t);
+
+
+    (*t_out) = t;
+    (*u_out) = u;
+    (*v_out) = v;
+
+    return mask;
+
+}*/
+/*end triangle raytracer*/
+
 // functions
 int plane_intersect(local Primitive * p, Ray * ray, float * cumu_dist ){
 	float d = DOT( p->normal, ray->direction );
