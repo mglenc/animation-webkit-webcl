@@ -6,7 +6,7 @@ var prim_list_buffer; //ArrayBuffer
 var prim_list_float32View;
 var n_primitives = 0;
 
-var sceneFileName = "scenes/scene1.txt";
+var sceneFileName = "scenes/scene2.txt";
 
 var clKernel;
 var wgSize;
@@ -14,6 +14,10 @@ var cl;
 var clQueue;
 var clSrc;
 var clProgram;
+
+var camera_x = 0;
+var camera_y = 0;
+var camera_z = 0;
 
 //view const - (0,0,0) in webgl is (0,0,20) in webcl
 var zConst = 20.0;
@@ -78,7 +82,7 @@ function initDevices() {
 }
 
 function refreshCL() {
-	raytrace(false);
+	raytrace(true);
 }
 
 function initWebCL() {
@@ -234,7 +238,135 @@ function moveView(dir){
 	}
 }
 
-function createPrimList(){
+function loadObjects() {
+	n_primitives = 0;
+	prim_list_raw = new Array();
+
+	for(i = 0; i < scene.shapes.length; i++) {
+		var currShape = scene.shapes[i];
+	
+		if(currShape.type == 'light') {
+			n_primitives++;
+			
+			prim_list_raw.push({ type: 1, 
+							m_color_r: parseFloat(currShape.acolor.r), 
+							m_color_g: parseFloat(currShape.acolor.g), 
+							m_color_b: parseFloat(currShape.acolor.b),
+							//TO DO: fix dialog windows to contain properties below
+							m_refl: parseFloat(currShape.refl), 
+							m_refr: parseFloat(currShape.refr),
+							m_refr_index: parseFloat(currShape.refr_index), 
+							m_diff: parseFloat(currShape.diff), 
+							m_spec: parseFloat(currShape.spec), 
+							light: 1, 
+							center_normal_x: parseFloat(currShape.x), 
+							center_normal_y: parseFloat(currShape.y), 
+							center_normal_z: parseFloat(currShape.z + zConst), //fix position by zConst
+							radius_depth: parseFloat(currShape.r), 
+							name: currShape.name});
+			
+		} else if(currShape.type == "sphere") {
+			n_primitives++;
+			
+			prim_list_raw.push({ type: 1, 
+							m_color_r: parseFloat(currShape.acolor.r), 
+							m_color_g: parseFloat(currShape.acolor.g), 
+							m_color_b: parseFloat(currShape.acolor.b),
+							//TO DO: fix dialog windows to contain properties below
+							m_refl: parseFloat(currShape.refl), 
+							m_refr: parseFloat(currShape.refr),
+							m_refr_index: parseFloat(currShape.refr_index), 
+							m_diff: parseFloat(currShape.diff), 
+							m_spec: parseFloat(currShape.spec), 
+							light: 0, 
+							center_normal_x: parseFloat(currShape.x), 
+							center_normal_y: parseFloat(currShape.y), 
+							center_normal_z: parseFloat(currShape.z + zConst), //fix position by zConst
+							radius_depth: parseFloat(currShape.r), 
+							name: currShape.name});
+		}
+	}
+	
+	prim_list_buffer = new ArrayBuffer( n_primitives * 96 );
+	
+	//create a new view that divides buffer to 32 bit float
+	prim_list_float32View = new Float32Array(prim_list_buffer);
+	
+	//filling array buffer with loaded objects
+	for(var i = 0; i < n_primitives; i++){
+		var m_color = [0.0,0.0,0.0,0.0]; //Color m_color;
+		var m_refl = 0.0; //float m_refl;
+		var m_diff = 0.0; //float m_diff;
+		var m_refr = 0.0; //float m_refr;
+		var m_refr_index = 0.0; //float m_refr_index;
+		var m_spec = 0.0; //float m_spec;
+		var dummy_3 = 0.0; //float dummy_3;
+		var type = 0.0; //prim_type type;
+		var is_light = 0.0; //bool is_light;
+		var normal = [0.0,0.0,0.0,0.0]; //float4 normal;
+		var center = [0.0,0.0,0.0,0.0]; //float4 center;
+		var depth = 0.0; //float depth;
+		var radius = 0.0; //float radius;
+		var sq_radius = 0.0; //float sq_radius;
+		var r_radius = 0.0; //float r_radius;
+		
+		m_color[0] = prim_list_raw[i].m_color_r;
+		m_color[1] = prim_list_raw[i].m_color_g;
+		m_color[2] = prim_list_raw[i].m_color_b;
+		m_refl = prim_list_raw[i].m_refl;
+		m_diff = prim_list_raw[i].m_diff;
+		m_refr = prim_list_raw[i].m_refr;
+		m_refr_index = prim_list_raw[i].m_refr_index;
+		m_spec = prim_list_raw[i].m_spec;			
+		
+		if(prim_list_raw[i].light == 1)
+			is_light = 1.0;
+		
+		type = prim_list_raw[i].type;	
+		if(type == 0){
+			normal[0] = prim_list_raw[i].center_normal_x;
+			normal[1] = prim_list_raw[i].center_normal_y;
+			normal[2] = prim_list_raw[i].center_normal_z;
+			depth = prim_list_raw[i].radius_depth;
+		} else {				
+			center[0] = prim_list_raw[i].center_normal_x;
+			center[1] = prim_list_raw[i].center_normal_y;
+			center[2] = prim_list_raw[i].center_normal_z;
+			radius = prim_list_raw[i].radius_depth;
+			sq_radius = radius * radius;
+			r_radius = (1.0 / radius);
+		}
+		
+		var x = 0;
+		var y = i * 24;
+		prim_list_float32View[y + x] = m_color[0]; x++;		// 0
+		prim_list_float32View[y + x] = m_color[1]; x++;		// 1
+		prim_list_float32View[y + x] = m_color[2]; x++;		// 2
+		prim_list_float32View[y + x] = m_color[3]; x++;		// 3 always empty
+		prim_list_float32View[y + x] = m_refl; x++;			// 4
+		prim_list_float32View[y + x] = m_diff; x++;			// 5
+		prim_list_float32View[y + x] = m_refr; x++;			// 6
+		prim_list_float32View[y + x] = m_refr_index; x++;	// 7
+		prim_list_float32View[y + x] = m_spec; x++;			// 8
+		prim_list_float32View[y + x] = dummy_3; x++;		// 9
+		prim_list_float32View[y + x] = type; x++;			// 10
+		prim_list_float32View[y + x] = is_light; x++;		// 11
+		prim_list_float32View[y + x] = normal[0]; x++;		// 12
+		prim_list_float32View[y + x] = normal[1]; x++;		// 13
+		prim_list_float32View[y + x] = normal[2]; x++;		// 14
+		prim_list_float32View[y + x] = normal[3]; x++;		// 15 always empty
+		prim_list_float32View[y + x] = center[0]; x++;		// 16
+		prim_list_float32View[y + x] = center[1]; x++;		// 17
+		prim_list_float32View[y + x] = center[2]; x++;		// 18
+		prim_list_float32View[y + x] = center[3]; x++;		// 19 always empty
+		prim_list_float32View[y + x] = depth; x++;			// 20
+		prim_list_float32View[y + x] = radius; x++;			// 21
+		prim_list_float32View[y + x] = sq_radius; x++;		// 22
+		prim_list_float32View[y + x] = r_radius; x++;		// 23		
+	}
+}
+
+/*function createPrimList(){
 	var lines = new Array();
 	var mHttpReq = new XMLHttpRequest();
 	mHttpReq.open("GET", sceneFileName, false);
@@ -337,7 +469,7 @@ function createPrimList(){
 		prim_list_float32View[y + x] = sq_radius; x++;		// 22
 		prim_list_float32View[y + x] = r_radius; x++;		// 23		
 	}
-}
+}*/
 
 function raytrace(refreshPrims) {
 	var deviceType = useDeviceType;
@@ -365,24 +497,26 @@ function raytrace(refreshPrims) {
 	
 	if(refreshPrims) {
 		//loading primitives
-		createPrimList();
+		//createPrimList();
 		
-		camera_x = scene.zoomMatrix[0];
-		camera_y = scene.zoomMatrix[1];
+		loadObjects();
+		
+		//camera_x = scene.zoomMatrix[0];
+		//camera_y = scene.zoomMatrix[1];
 	}
 	
 	//calculating camera zoom, it lives in other coordinate systems then objects
 	camera_z = -zConst - scene.zoomMatrix[2];	
 	
 	logMessage("Started raytrace...");
-	
+		
 	try {		
 		canvas.width = screenWidth;
 		canvas.height = screenHeight;
 		var canvasCtx = canvas.getContext("2d");
 		var pixels = canvasCtx.getImageData(0,0,screenWidth,screenHeight);
 		
-		canvasCtx.fillStyle = "rgba(0,0,0,1)";
+		canvasCtx.fillStyle = "rgba(" + scene.bcolor.r + "," + scene.bcolor.g + "," + scene.bcolor.b + ",1)";
 		canvasCtx.fillRect(0, 0, screenWidth, screenHeight);
 		
 		//running in webcl

@@ -19,14 +19,14 @@ scene.resy = 1080;
 scene.name = 'Test scene';
 
 scene.bcolor = new Object();
-scene.bcolor.r = 0.1;
-scene.bcolor.g = 0.1;
-scene.bcolor.b = 0.1;
+scene.bcolor.r = 0.2;
+scene.bcolor.g = 0.2;
+scene.bcolor.b = 0.2;
 
 scene.glcolor = new Object();
-scene.glcolor.r = 0.1;
-scene.glcolor.g = 0.1;
-scene.glcolor.b = 0.1;
+scene.glcolor.r = 0.2;
+scene.glcolor.g = 0.2;
+scene.glcolor.b = 0.2;
 
 //original position: 0; 0; -9
 scene.zoomMatrix = [0,0,-7];
@@ -50,12 +50,6 @@ function refreshScene() {
 }
 
 function initSceneData() {
-	var color = [0.8, 0.8, 0.8, 1.0];
-	var alterColor = [0.25, 0.28, 0.29, 1.0];
-	var alterColor2 = [0.15, 0.15, 0.15, 1.0];
-	
-	gl.clearColor(color[0],color[1],color[2],color[3]);
-	
 	$("#" + canvasId).mousedown(function(event) {
 		rotateHandleMouseDown(event);
 	});
@@ -108,13 +102,13 @@ function initSceneData() {
 				
 				switch(scene.shapes[selectedShapeId].type) {
 					case 'light':
-						scene.shapes[selectedShapeId][modif] -= 0.25;
+						scene.shapes[selectedShapeId][modif] = parseFloat(scene.shapes[selectedShapeId][modif]) - 0.25;
 						break;
 					case 'sphere':
-						scene.shapes[selectedShapeId][modif] -= 0.25;
+						scene.shapes[selectedShapeId][modif] = parseFloat(scene.shapes[selectedShapeId][modif]) - 0.25;
 					default:
 						for(i = 0; i < scene.shapes[selectedShapeId].vertexPosition.length; i++) {
-							scene.shapes[selectedShapeId].vertexPosition[i][modif] -= 0.25;
+							scene.shapes[selectedShapeId].vertexPosition[i][modif] = parseFloat(scene.shapes[selectedShapeId].vertexPosition[i][modif]) - 0.25;
 						}
 						break;
 				}
@@ -131,13 +125,13 @@ function initSceneData() {
 				
 				switch(scene.shapes[selectedShapeId].type) {
 					case 'light':
-						scene.shapes[selectedShapeId][modif] += 0.25;
+						scene.shapes[selectedShapeId][modif] = parseFloat(scene.shapes[selectedShapeId][modif]) + 0.25;
 						break;
 					case 'sphere':
-						scene.shapes[selectedShapeId][modif] += 0.25;
+						scene.shapes[selectedShapeId][modif] = parseFloat(scene.shapes[selectedShapeId][modif]) + 0.25;
 					default:
 						for(i = 0; i < scene.shapes[selectedShapeId].vertexPosition.length; i++) {
-							scene.shapes[selectedShapeId].vertexPosition[i][modif] += 0.25;
+							scene.shapes[selectedShapeId].vertexPosition[i][modif] = parseFloat(scene.shapes[selectedShapeId].vertexPosition[i][modif]) +  0.25;
 						}
 						break;
 				}
@@ -175,7 +169,7 @@ function initSceneData() {
 		if(event.altKey) scene.altKeyDown = false;
 	});
 	
-	refreshScene();
+	//refreshScene();
 }
 
 function degToRad(degrees) {
@@ -250,6 +244,8 @@ function zoomHandleMouseWheel(delta) {
 	refreshScene();
 }
 
+
+
 function initScene() {
     initSceneData();
     
@@ -257,4 +253,15 @@ function initScene() {
     	deselectShape();
     	refreshScene();
     });
+    
+    //window resize event chnages ratio
+	$(window).resize(function() {
+		canvas.width = $("#" + canvasId).width();
+		canvas.height = $("#" + canvasId).height();
+		
+		gl.viewportWidth = canvas.width;
+		gl.viewportHeight = canvas.height;
+		
+		refreshScene();
+	});
 }

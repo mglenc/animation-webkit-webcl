@@ -44,18 +44,13 @@ function initGL(canvasId) {
 	if(!gl) {
 		//error dialog
 		alert("Could not initialise WebGL!");
+	} else {
+		//setup buffers for already existing objects
+		for(i = 0; i < scene.shapes.length; i++) {
+			scene.shapes[i].vertexPositionBuffer = gl.createBuffer();
+			scene.shapes[i].vertexColorBuffer = gl.createBuffer();
+		}
 	}
-	
-	//window resize event chnages ratio
-	$(window).resize(function() {
-		canvas.width = $("#" + canvasId).width();
-		canvas.height = $("#" + canvasId).height();
-		
-		gl.viewportWidth = canvas.width;
-		gl.viewportHeight = canvas.height;
-		
-		drawScene();
-	});
 }
 
 function getShader(gl, id) {
@@ -127,6 +122,12 @@ function setMatrixUniforms() {
 }
 
 function refreshOutline() {
+	var color = [0.2, 0.2, 0.2, 1.0];
+	var alterColor = [0.25, 0.28, 0.29, 1.0];
+	var alterColor2 = [0.15, 0.15, 0.15, 1.0];
+	
+	gl.clearColor(scene.bcolor.r,scene.bcolor.g,scene.bcolor.b,1.0);
+
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	
@@ -219,7 +220,7 @@ function refreshOutline() {
 				gl.disable(gl.DEPTH_TEST);*/
 				gl.enable(gl.DEPTH_TEST);
 				gl.uniform1f(shaderProgram.alphaUniform, parseFloat(0.1));
-				
+								
 				//position buffer
 				gl.bindBuffer(gl.ARRAY_BUFFER, scene.shapes[i].vertexPositionBuffer);			
 				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(newTriangle), gl.STATIC_DRAW);
@@ -282,9 +283,15 @@ function initWebGL() {
 	initGL(canvasId);
 	initShaders();
 	
-	refreshScene();
+	refreshOutline();
 }
 
 function initOutliner() {
     initWebGL();
+    
+    var canvas = document.getElementById(canvasId);
+    canvas.addEventListener("webglcontextlost", function(event) {
+		event.preventDefault();
+		console.log("webgl context lost");
+	}, false);
 }

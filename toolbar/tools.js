@@ -8,6 +8,7 @@ Author: Michal Glenc
 uniqShapeId = 0;
 
 var running_log;
+var enable_log = false;
 
 function addComplex(properties) {
 	var newObj = scene.shapes.length;
@@ -103,23 +104,30 @@ function addComplex(properties) {
 		scene.shapes[newObj].acolor.b = 0.5;
 	}
 	
-	scene.shapes[newObj].scolor = new Object();
-	if(properties != undefined && properties['scolor'] != undefined && properties['scolor'] != "")
-		scene.shapes[newObj].scolor = properties['scolor'];
-	else {
-		scene.shapes[newObj].scolor.r = 0.5;
-		scene.shapes[newObj].scolor.g = 0.5;
-		scene.shapes[newObj].scolor.b = 0.5;
-	}
+	if(properties != undefined && properties['refl'] != undefined && properties['refl'] != "")
+		scene.shapes[newObj].refl = properties['refl'];
+	else
+		scene.shapes[newObj].refl = 0.8;
 	
-	scene.shapes[newObj].dcolor = new Object();
-	if(properties != undefined && properties['dcolor'] != undefined && properties['dcolor'] != "")
-		scene.shapes[newObj].dcolor = properties['dcolor'];
-	else {
-		scene.shapes[newObj].dcolor.r = 0.5;
-		scene.shapes[newObj].dcolor.g = 0.5;
-		scene.shapes[newObj].dcolor.b = 0.5;
-	}
+	if(properties != undefined && properties['refr'] != undefined && properties['refr'] != "")
+		scene.shapes[newObj].refr = properties['refr'];
+	else
+		scene.shapes[newObj].refr = 0.8;
+		
+	if(properties != undefined && properties['refr_index'] != undefined && properties['refr_index'] != "")
+		scene.shapes[newObj].refr_index = properties['refr_index'];
+	else
+		scene.shapes[newObj].refr_index = 1.0;
+		
+	if(properties != undefined && properties['diff'] != undefined && properties['diff'] != "")
+		scene.shapes[newObj].diff = properties['diff'];
+	else
+		scene.shapes[newObj].diff = 0.0;
+		
+		if(properties != undefined && properties['spec'] != undefined && properties['spec'] != "")
+		scene.shapes[newObj].spec = properties['spec'];
+	else
+		scene.shapes[newObj].spec = 0.0;
 	
 	//setting shape type
 	scene.shapes[newObj].type = 'complex';
@@ -143,17 +151,42 @@ function addLight(properties) {
 	if(properties != undefined && properties['x'] != undefined && properties['x'] != "")
 		scene.shapes[newObj].x = properties['x'];
 	else
-		scene.shapes[newObj].x = -3.0;
+		scene.shapes[newObj].x = 3.0;
 	
 	if(properties != undefined && properties['y'] != undefined && properties['y'] != "")
 		scene.shapes[newObj].y = properties['y'];
 	else
-		scene.shapes[newObj].y = 12.0;
+		scene.shapes[newObj].y = 6.0;
 		
 	if(properties != undefined && properties['z'] != undefined && properties['z'] != "")
 		scene.shapes[newObj].z = properties['z'];
 	else
-		scene.shapes[newObj].z = -15.0;
+		scene.shapes[newObj].z = 0.0;
+		
+	if(properties != undefined && properties['refl'] != undefined && properties['refl'] != "")
+		scene.shapes[newObj].refl = properties['refl'];
+	else
+		scene.shapes[newObj].refl = 0.0;
+	
+	if(properties != undefined && properties['refr'] != undefined && properties['refr'] != "")
+		scene.shapes[newObj].refr = properties['refr'];
+	else
+		scene.shapes[newObj].refr = 0.0;
+		
+	if(properties != undefined && properties['refr_index'] != undefined && properties['refr_index'] != "")
+		scene.shapes[newObj].refr_index = properties['refr_index'];
+	else
+		scene.shapes[newObj].refr_index = 1.0;
+		
+	if(properties != undefined && properties['diff'] != undefined && properties['diff'] != "")
+		scene.shapes[newObj].diff = properties['diff'];
+	else
+		scene.shapes[newObj].diff = 0.0;
+		
+		if(properties != undefined && properties['spec'] != undefined && properties['spec'] != "")
+		scene.shapes[newObj].spec = properties['spec'];
+	else
+		scene.shapes[newObj].spec = 2.0;
 		
 	//not setting id since it old ids can collide with new ones
 	scene.shapes[newObj].uniqShapeId = uniqShapeId++;
@@ -162,15 +195,15 @@ function addLight(properties) {
 	if(properties != undefined && properties['r'] != undefined && properties['r'] != "")
 		scene.shapes[newObj].r = properties['r'];
 	else
-		scene.shapes[newObj].r = 0.02;
+		scene.shapes[newObj].r = 0.35;
 	
 	scene.shapes[newObj].acolor = new Object();
 	if(properties != undefined && properties['acolor'] != undefined && properties['acolor'] != "")
 		scene.shapes[newObj].acolor = properties['acolor'];
 	else {
-		scene.shapes[newObj].acolor.r = 0.1;
-		scene.shapes[newObj].acolor.g = 0.5;
-		scene.shapes[newObj].acolor.b = 0.3;
+		scene.shapes[newObj].acolor.r = 0.9;
+		scene.shapes[newObj].acolor.g = 0.9;
+		scene.shapes[newObj].acolor.b = 0.9;
 	}
 	
 	scene.shapes[newObj].scolor = new Object();
@@ -248,28 +281,35 @@ function addSphere(properties) {
 	if(properties != undefined && properties['acolor'] != undefined && properties['acolor'] != "")
 		scene.shapes[newObj].acolor = properties['acolor'];
 	else {
-		scene.shapes[newObj].acolor.r = 0.1;
-		scene.shapes[newObj].acolor.g = 0.5;
-		scene.shapes[newObj].acolor.b = 0.3;
+		scene.shapes[newObj].acolor.r = 0.6;
+		scene.shapes[newObj].acolor.g = 0.6;
+		scene.shapes[newObj].acolor.b = 0.6;
 	}
 	
-	scene.shapes[newObj].scolor = new Object();
-	if(properties != undefined && properties['scolor'] != undefined && properties['scolor'] != "")
-		scene.shapes[newObj].scolor = properties['scolor'];
-	else {
-		scene.shapes[newObj].scolor.r = 0.2;
-		scene.shapes[newObj].scolor.g = 0.3;
-		scene.shapes[newObj].scolor.b = 0.1;
-	}
+	if(properties != undefined && properties['refl'] != undefined && properties['refl'] != "")
+		scene.shapes[newObj].refl = properties['refl'];
+	else
+		scene.shapes[newObj].refl = 0.3;
 	
-	scene.shapes[newObj].dcolor = new Object();
-	if(properties != undefined && properties['dcolor'] != undefined && properties['dcolor'] != "")
-		scene.shapes[newObj].dcolor = properties['dcolor'];
-	else {
-		scene.shapes[newObj].dcolor.r = 0.2;
-		scene.shapes[newObj].dcolor.g = 0.3;
-		scene.shapes[newObj].dcolor.b = 0.1;
-	}
+	if(properties != undefined && properties['refr'] != undefined && properties['refr'] != "")
+		scene.shapes[newObj].refr = properties['refr'];
+	else
+		scene.shapes[newObj].refr = 0.8;
+		
+	if(properties != undefined && properties['refr_index'] != undefined && properties['refr_index'] != "")
+		scene.shapes[newObj].refr_index = properties['refr_index'];
+	else
+		scene.shapes[newObj].refr_index = 1.0;
+		
+	if(properties != undefined && properties['diff'] != undefined && properties['diff'] != "")
+		scene.shapes[newObj].diff = properties['diff'];
+	else
+		scene.shapes[newObj].diff = 2.0;
+		
+		if(properties != undefined && properties['spec'] != undefined && properties['spec'] != "")
+		scene.shapes[newObj].spec = properties['spec'];
+	else
+		scene.shapes[newObj].spec = 0.0;
 	
 	var colors = [
 		0.5, 0.5, 0.5, 0.3,
@@ -493,7 +533,7 @@ function refreshProperties() {
 						'<td class="left-col">frames:</td>' +
 						'<td class="right-col"><input type="text" id="frames-input" value="' + scene.frames + '" /></td>' +
 					'</tr>' +
-					'<tr class="fps">' +
+					/*'<tr class="fps">' +
 						'<td class="left-col">frames per second:</td>' +
 						'<td class="right-col"><input type="text" id="fps-input" value="' + scene.fps + '" /></td>' +
 					'</tr>' +
@@ -512,7 +552,7 @@ function refreshProperties() {
 					'<tr class="resolution">' +
 						'<td class="left-col">resolution:</td>' +
 						'<td class="right-col"><input type="text" id="resx-input" value="' + scene.resx + '" /> x <input type="text" id="resy-input" value="' + scene.resy + '" /></td>' +
-					'</tr>' +
+					'</tr>' +*/
 					'<tr class="bcolor">' +
 						'<td class="left-col">background color:</td>' +
 						'<td class="right-col"><a href="javascript:void" class="button-small set" id="set-scene-bcolor">Set bcolor</a></td>' +
@@ -553,6 +593,8 @@ function refreshProperties() {
 					close: function() {
 						$('.tools#color-dialog .colorpicker').remove();
 						$('.tools#color-dialog').removeData('colorpickerId');
+						
+						refreshScene();
 						//console.log("bcolor onclose: " + scene.bcolor.r*255 + " " + scene.bcolor.g*255 + " " + scene.bcolor.b*255);
 					}
 				});
@@ -588,6 +630,7 @@ function refreshProperties() {
 						$('.tools#color-dialog .colorpicker').remove();
 						$('.tools#color-dialog').removeData('colorpickerId');
 					
+						refreshScene();
 						//console.log("glcolor onclose: " + scene.glcolor.r*255 + " " + scene.glcolor.g*255 + " " + scene.glcolor.b*255);
 					}
 				});
@@ -597,12 +640,12 @@ function refreshProperties() {
 				if(event.which == 13) {
 					scene.name = $('#name-input').val();
 					scene.frames = $('#frames-input').val();
-					scene.fps = $('#fps-input').val();
+					/*scene.fps = $('#fps-input').val();
 					scene.height = $('#height-input').val();
 					scene.width = $('#width-input').val();
 					scene.depth = $('#depth-input').val();
 					scene.resx = $('#resx-input').val();
-					scene.resy = $('#resy-input').val();
+					scene.resy = $('#resy-input').val();*/
 					//colors
 					
 					refreshTimeline();
@@ -624,14 +667,27 @@ function refreshProperties() {
 						'<td class="left-col">ambient color:</td>' +
 						'<td class="right-col"><a href="javascript:void" class="button-small set" id="set-light-acolor">Set ambient color</a></td>' +
 					'</tr>' +
-					'<tr class="scolor">' +
-						'<td class="left-col">specular color:</td>' +
-						'<td class="right-col"><a href="javascript:void" class="button-small set" id="set-light-scolor">Set specular color</a></td>' +
+					//below parameters wont change anything for light
+					/*'<tr class="refl">' +
+						'<td class="left-col">surface reflection: </td>' +
+						'<td class="right-col"><input type="text" id="light-refl-input" value="' + scene.shapes[selectedShapeId].refl + '" /></td>' +
 					'</tr>' +
-					'<tr class="dcolor">' +
-						'<td class="left-col">diffuse color:</td>' +
-						'<td class="right-col"><a href="javascript:void" class="button-small set" id="set-light-dcolor">Set diffuse color</a></td>' +
+					'<tr class="refr">' +
+						'<td class="left-col">material refraction: </td>' +
+						'<td class="right-col"><input type="text" id="light-refr-input" value="' + scene.shapes[selectedShapeId].refr + '" /></td>' +
 					'</tr>' +
+					'<tr class="refr_index">' +
+						'<td class="left-col">refraction index: </td>' +
+						'<td class="right-col"><input type="text" id="light-refr-index-input" value="' + scene.shapes[selectedShapeId].refr_index + '" /></td>' +
+					'</tr>' +
+					'<tr class="diff">' +
+						'<td class="left-col">surface diffuse: </td>' +
+						'<td class="right-col"><input type="text" id="light-diff-input" value="' + scene.shapes[selectedShapeId].diff + '" /></td>' +
+					'</tr>' +
+					'<tr class="spec">' +
+						'<td class="left-col">surface specular: </td>' +
+						'<td class="right-col"><input type="text" id="light-spec-input" value="' + scene.shapes[selectedShapeId].spec + '" /></td>' +
+					'</tr>' +*/
 				'</table>');
 			$('a#set-light-acolor').click(function() {
 				$('.tools#color-dialog').dialog({
@@ -662,75 +718,9 @@ function refreshProperties() {
 					close: function() {
 						$('.tools#color-dialog .colorpicker').remove();
 						$('.tools#color-dialog').removeData('colorpickerId');
+						
+						refreshScene();
 						//console.log("acolor onclose: " + scene.shapes[selectedShapeId].acolor.r*255 + " " + scene.shapes[selectedShapeId].acolor.g*255 + " " + scene.shapes[selectedShapeId].acolor.b*255);
-					}
-				});
-			});
-			
-			$('a#set-light-scolor').click(function() {
-				$('.tools#color-dialog').dialog({
-					dialogClass: 'color-dialog',
-					autoOpen: true,
-					width: 'auto',
-					height: 'auto',
-					minHeight: 0,
-					resizable: false,
-					autoResize: true,
-					position: [$(document).width()/2-100, 300],
-					buttons: {
-					},
-					open: function() {
-						$('.tools#color-dialog').html('Light specular color');				
-						$('.tools#color-dialog').ColorPicker({
-							flat: true,
-							color: {r: scene.shapes[selectedShapeId].scolor.r*255, g: scene.shapes[selectedShapeId].scolor.g*255, b: scene.shapes[selectedShapeId].scolor.b*255},
-							onChange: function(hsb, hex, rgb) {
-								scene.shapes[selectedShapeId].scolor.r = rgb.r/255;
-								scene.shapes[selectedShapeId].scolor.g = rgb.g/255;
-								scene.shapes[selectedShapeId].scolor.b = rgb.b/255;
-								
-								//console.log("scolor onchange: " + scene.shapes[selectedShapeId].scolor.r*255 + " " + scene.shapes[selectedShapeId].scolor.g*255 + " " + scene.shapes[selectedShapeId].scolor.b*255);
-							}
-						});
-					},
-					close: function() {
-						$('.tools#color-dialog .colorpicker').remove();
-						$('.tools#color-dialog').removeData('colorpickerId');
-						//console.log("scolor onclose: " + scene.shapes[selectedShapeId].scolor.r*255 + " " + scene.shapes[selectedShapeId].scolor.g*255 + " " + scene.shapes[selectedShapeId].scolor.b*255);
-					}
-				});
-			});
-			
-			$('a#set-light-dcolor').click(function() {
-				$('.tools#color-dialog').dialog({
-					dialogClass: 'color-dialog',
-					autoOpen: true,
-					width: 'auto',
-					height: 'auto',
-					minHeight: 0,
-					resizable: false,
-					autoResize: true,
-					position: [$(document).width()/2-100, 300],
-					buttons: {
-					},
-					open: function() {
-						$('.tools#color-dialog').html('Light diffuse color');				
-						$('.tools#color-dialog').ColorPicker({
-							flat: true,
-							color: {r: scene.shapes[selectedShapeId].dcolor.r*255, g: scene.shapes[selectedShapeId].dcolor.g*255, b: scene.shapes[selectedShapeId].dcolor.b*255},
-							onChange: function(hsb, hex, rgb) {
-								scene.shapes[selectedShapeId].dcolor.r = rgb.r/255;
-								scene.shapes[selectedShapeId].dcolor.g = rgb.g/255;
-								scene.shapes[selectedShapeId].dcolor.b = rgb.b/255;
-								
-								//console.log("dcolor onchange: " + scene.shapes[selectedShapeId].dcolor.r*255 + " " + scene.shapes[selectedShapeId].dcolor.g*255 + " " + scene.shapes[selectedShapeId].dcolor.b*255);
-							}
-						});
-					},
-					close: function() {
-						$('.tools#color-dialog .colorpicker').remove();
-						$('.tools#color-dialog').removeData('colorpickerId');
-						//console.log("dcolor onclose: " + scene.shapes[selectedShapeId].dcolor.r*255 + " " + scene.shapes[selectedShapeId].dcolor.g*255 + " " + scene.shapes[selectedShapeId].dcolor.b*255);
 					}
 				});
 			});
@@ -741,6 +731,15 @@ function refreshProperties() {
 					scene.shapes[selectedShapeId].y = $('#light-y-input').val();
 					scene.shapes[selectedShapeId].z = $('#light-z-input').val();
 					scene.shapes[selectedShapeId].r = $('#light-r-input').val();
+					scene.shapes[selectedShapeId].refl = $('#light-refl-input').val();
+					scene.shapes[selectedShapeId].refr = $('#light-refr-input').val();
+					scene.shapes[selectedShapeId].refr_index = $('#light-refr-index-input').val();
+					scene.shapes[selectedShapeId].diff = $('#light-diff-input').val();
+					scene.shapes[selectedShapeId].spec = $('#light-spec-input').val();
+					
+					//console.log(scene.shapes[selectedShapeId].refl + 
+					
+					refreshScene();
 				}
 			});
 		} else {
@@ -754,17 +753,25 @@ function refreshProperties() {
 							'<td class="left-col">ambient color:</td>' +
 							'<td class="right-col"><a href="javascript:void" class="button-small set" id="set-shape-acolor">Set ambient color</a></td>' +
 						'</tr>' +
-						'<tr class="scolor">' +
-							'<td class="left-col">specular color:</td>' +
-							'<td class="right-col"><a href="javascript:void" class="button-small set" id="set-shape-scolor">Set specular color</a></td>' +
+						'<tr class="refl">' +
+							'<td class="left-col">surface reflection: </td>' +
+							'<td class="right-col"><input type="text" id="light-refl-input" value="' + scene.shapes[selectedShapeId].refl + '" /></td>' +
 						'</tr>' +
-						'<tr class="dcolor">' +
-							'<td class="left-col">diffuse color:</td>' +
-							'<td class="right-col"><a href="javascript:void" class="button-small set" id="set-shape-dcolor">Set diffuse color</a></td>' +
+						'<tr class="refr">' +
+							'<td class="left-col">material refraction: </td>' +
+							'<td class="right-col"><input type="text" id="light-refr-input" value="' + scene.shapes[selectedShapeId].refr + '" /></td>' +
 						'</tr>' +
-						'<tr class="n">' +
-							'<td class="left-col">luster level:</td>' +
-							'<td class="right-col"><input type="text" id="n-input" value="' + scene.shapes[selectedShapeId].n + '" /></td>' +
+						'<tr class="refr_index">' +
+							'<td class="left-col">refraction index: </td>' +
+							'<td class="right-col"><input type="text" id="light-refr-index-input" value="' + scene.shapes[selectedShapeId].refr_index + '" /></td>' +
+						'</tr>' +
+						'<tr class="diff">' +
+							'<td class="left-col">surface diffuse: </td>' +
+							'<td class="right-col"><input type="text" id="light-diff-input" value="' + scene.shapes[selectedShapeId].diff + '" /></td>' +
+						'</tr>' +
+						'<tr class="spec">' +
+							'<td class="left-col">surface specular: </td>' +
+							'<td class="right-col"><input type="text" id="light-spec-input" value="' + scene.shapes[selectedShapeId].spec + '" /></td>' +
 						'</tr>' +
 					'</table>' + 
 				'</div>' +
@@ -800,82 +807,22 @@ function refreshProperties() {
 					close: function() {
 						$('.tools#color-dialog .colorpicker').remove();
 						$('.tools#color-dialog').removeData('colorpickerId');
+						
+						refreshScene();
 						//console.log("bcolor onclose: " + scene.shapes[selectedShapeId].acolor.r*255 + " " + scene.shapes[selectedShapeId].acolor.g*255 + " " + scene.shapes[selectedShapeId].acolor.b*255);
-					}
-				});
-			});
-			
-			$('a#set-shape-scolor').click(function() {
-				$('.tools#color-dialog').dialog({
-					dialogClass: 'color-dialog',
-					autoOpen: true,
-					width: 'auto',
-					height: 'auto',
-					minHeight: 0,
-					resizable: false,
-					autoResize: true,
-					position: [$(document).width()/2-100, 300],
-					buttons: {
-					},
-					open: function() {
-						$('.tools#color-dialog').html('Shape specular color');				
-						$('.tools#color-dialog').ColorPicker({
-							flat: true,
-							color: {r: scene.shapes[selectedShapeId].scolor.r*255, g: scene.shapes[selectedShapeId].scolor.g*255, b: scene.shapes[selectedShapeId].scolor.b*255},
-							onChange: function(hsb, hex, rgb) {
-								scene.shapes[selectedShapeId].scolor.r = rgb.r/255;
-								scene.shapes[selectedShapeId].scolor.g = rgb.g/255;
-								scene.shapes[selectedShapeId].scolor.b = rgb.b/255;
-								
-								//console.log("bcolor onchange: " + scene.shapes[selectedShapeId].scolor.r*255 + " " + scene.shapes[selectedShapeId].scolor.g*255 + " " + scene.shapes[selectedShapeId].scolor.b*255);
-							}
-						});
-					},
-					close: function() {
-						$('.tools#color-dialog .colorpicker').remove();
-						$('.tools#color-dialog').removeData('colorpickerId');
-						//console.log("bcolor onclose: " + scene.shapes[selectedShapeId].scolor.r*255 + " " + scene.shapes[selectedShapeId].scolor.g*255 + " " + scene.shapes[selectedShapeId].scolor.b*255);
-					}
-				});
-			});
-			
-			$('a#set-shape-dcolor').click(function() {
-				$('.tools#color-dialog').dialog({
-					dialogClass: 'color-dialog',
-					autoOpen: true,
-					width: 'auto',
-					height: 'auto',
-					minHeight: 0,
-					resizable: false,
-					autoResize: true,
-					position: [$(document).width()/2-100, 300],
-					buttons: {
-					},
-					open: function() {
-						$('.tools#color-dialog').html('Shape diffuse color');				
-						$('.tools#color-dialog').ColorPicker({
-							flat: true,
-							color: {r: scene.shapes[selectedShapeId].dcolor.r*255, g: scene.shapes[selectedShapeId].dcolor.g*255, b: scene.shapes[selectedShapeId].dcolor.b*255},
-							onChange: function(hsb, hex, rgb) {
-								scene.shapes[selectedShapeId].dcolor.r = rgb.r/255;
-								scene.shapes[selectedShapeId].dcolor.g = rgb.g/255;
-								scene.shapes[selectedShapeId].dcolor.b = rgb.b/255;
-								
-								//console.log("bcolor onchange: " + scene.shapes[selectedShapeId].dcolor.r*255 + " " + scene.shapes[selectedShapeId].dcolor.g*255 + " " + scene.shapes[selectedShapeId].dcolor.b*255);
-							}
-						});
-					},
-					close: function() {
-						$('.tools#color-dialog .colorpicker').remove();
-						$('.tools#color-dialog').removeData('colorpickerId');
-						//console.log("bcolor onclose: " + scene.shapes[selectedShapeId].dcolor.r*255 + " " + scene.shapes[selectedShapeId].dcolor.g*255 + " " + scene.shapes[selectedShapeId].dcolor.b*255);
 					}
 				});
 			});
 				
 			$('#properties-dialog #shape-color-panel table input').keydown(function(event) {
 				if(event.which == 13) {
-					scene.shapes[selectedShapeId].n = $('#n-input').val();
+					scene.shapes[selectedShapeId].refl = $('#light-refl-input').val();
+					scene.shapes[selectedShapeId].refr = $('#light-refr-input').val();
+					scene.shapes[selectedShapeId].refr_index = $('#light-refr-index-input').val();
+					scene.shapes[selectedShapeId].diff = $('#light-diff-input').val();
+					scene.shapes[selectedShapeId].spec = $('#light-spec-input').val();
+					
+					refreshScene();
 				}
 			});
 			
@@ -2982,6 +2929,7 @@ function initSettings() {
 		if(drawMethod == "render-cl") {
 			initWebCL();
 		} else if(drawMethod == "outline")  {
+			//reinit
 			initWebGL();
 		}
 		
@@ -2992,8 +2940,10 @@ function initSettings() {
 }
 
 function logMessage(message) {
-	console.log(message);
-	running_log.append(message + "<br />");
+	if(enable_log == true) {
+		console.log(message);
+		running_log.append(message + "<br />");
+	}
 }
 
 function clearLog() {
