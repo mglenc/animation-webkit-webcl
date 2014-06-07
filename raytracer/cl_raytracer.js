@@ -6,6 +6,11 @@ var prim_list_buffer; //ArrayBuffer
 var prim_list_float32View;
 var n_primitives = 0;
 
+var tris_list_raw = new Array();
+var tris_list_buffer; //ArrayBuffer
+var tris_list_float32View;
+var n_triangles = 0;
+
 var sceneFileName = "scenes/scene2.txt";
 
 var clKernel;
@@ -240,7 +245,9 @@ function moveView(dir){
 
 function loadObjects() {
 	n_primitives = 0;
+	n_triangles = 0;
 	prim_list_raw = new Array();
+	tris_list_raw = new Array();
 
 	for(i = 0; i < scene.shapes.length; i++) {
 		var currShape = scene.shapes[i];
@@ -252,7 +259,6 @@ function loadObjects() {
 							m_color_r: parseFloat(currShape.acolor.r), 
 							m_color_g: parseFloat(currShape.acolor.g), 
 							m_color_b: parseFloat(currShape.acolor.b),
-							//TO DO: fix dialog windows to contain properties below
 							m_refl: parseFloat(currShape.refl), 
 							m_refr: parseFloat(currShape.refr),
 							m_refr_index: parseFloat(currShape.refr_index), 
@@ -272,7 +278,6 @@ function loadObjects() {
 							m_color_r: parseFloat(currShape.acolor.r), 
 							m_color_g: parseFloat(currShape.acolor.g), 
 							m_color_b: parseFloat(currShape.acolor.b),
-							//TO DO: fix dialog windows to contain properties below
 							m_refl: parseFloat(currShape.refl), 
 							m_refr: parseFloat(currShape.refr),
 							m_refr_index: parseFloat(currShape.refr_index), 
@@ -284,7 +289,84 @@ function loadObjects() {
 							center_normal_z: parseFloat(currShape.z + zConst), //fix position by zConst
 							radius_depth: parseFloat(currShape.r), 
 							name: currShape.name});
+		} else if(currShape.type == "complex") {
+			n_triangles_shape = currShape.vertexPosition.length/3;
+			n_triangles += currShape.vertexPosition.length/3;
+			
+			for(var i = 0; i < n_triangles_shape; i++) {
+				var tri_offset = i * 3;
+				tris_list_raw.push({
+					m_color_r: parseFloat(currShape.acolor.r),
+					m_color_g: parseFloat(currShape.acolor.g),
+					m_color_b: parseFloat(currShape.acolor.b),
+					m_refl: parseFloat(currShape.refl), 
+					m_refr: parseFloat(currShape.refr),
+					m_refr_index: parseFloat(currShape.refr_index), 
+					m_diff: parseFloat(currShape.diff), 
+					m_spec: parseFloat(currShape.spec), 
+					v: [currShape.vertexPosition[tri_offset].x, currShape.vertexPosition[tri_offset].y, currShape.vertexPosition[tri_offset].z, 0.0],
+					u: [currShape.vertexPosition[tri_offset+1].x, currShape.vertexPosition[tri_offset+1].y, currShape.vertexPosition[tri_offset+1].z, 0.0],
+					w: [currShape.vertexPosition[tri_offset+2].x, currShape.vertexPosition[tri_offset+2].y, currShape.vertexPosition[tri_offset+2].z, 0.0],
+					name: currShape.name});
+			}			
 		}
+	}
+	
+	tris_list_buffer = new ArrayBuffer( n_triangles * 88 );
+	
+	//create a new view that divides buffer to 32 bit float
+	tris_list_float32View = new Float32Array(tris_list_buffer);
+	
+	//add triangles to buffer
+	for(var i = 0; i < n_triangles; i++) {
+		var m_color = [0.0,0.0,0.0,0.0]; //Color m_color;
+		var m_refl = 0.0; //float m_refl;
+		var m_diff = 0.0; //float m_diff;
+		var m_refr = 0.0; //float m_refr;
+		var m_refr_index = 0.0; //float m_refr_index;
+		var m_spec = 0.0; //float m_spec;
+	
+		var dummy_3 = 0.0; //float dummy_3;
+	
+		var v = tris_list_raw[i].v;
+		var u = tris_list_raw[i].u;
+		var w = tris_list_raw[i].w;
+	
+		m_color[0] = tris_list_raw[i].m_color_r;
+		m_color[1] = tris_list_raw[i].m_color_g;
+		m_color[2] = tris_list_raw[i].m_color_b;
+		m_refl = tris_list_raw[i].m_refl;
+		m_diff = tris_list_raw[i].m_diff;
+		m_refr = tris_list_raw[i].m_refr;
+		m_refr_index = tris_list_raw[i].m_refr_index;
+		m_spec = tris_list_raw[i].m_spec;	
+		
+		var x = 0;
+		var y = i * 22;
+	
+		tris_list_float32View[y + x] = m_color[0]; x++;		// 0
+		tris_list_float32View[y + x] = m_color[1]; x++;		// 1
+		tris_list_float32View[y + x] = m_color[2]; x++;		// 2
+		tris_list_float32View[y + x] = m_color[3]; x++;		// 3 always empty
+		tris_list_float32View[y + x] = m_refl; x++;			// 4
+		tris_list_float32View[y + x] = m_diff; x++;			// 5
+		tris_list_float32View[y + x] = m_refr; x++;			// 6
+		tris_list_float32View[y + x] = m_refr_index; x++;	// 7
+		tris_list_float32View[y + x] = m_spec; x++;			// 8
+		tris_list_float32View[y + x] = dummy_3; x++;		// 9
+
+		tris_list_float32View[y + x] = v[0]; x++;		// 10
+		tris_list_float32View[y + x] = v[1]; x++;		// 11
+		tris_list_float32View[y + x] = v[2]; x++;		// 12
+		tris_list_float32View[y + x] = v[3]; x++;		// 13 always empty
+		tris_list_float32View[y + x] = u[0]; x++;		// 14
+		tris_list_float32View[y + x] = u[1]; x++;		// 15
+		tris_list_float32View[y + x] = u[2]; x++;		// 16
+		tris_list_float32View[y + x] = u[3]; x++;		// 17 always empty
+		tris_list_float32View[y + x] = w[0]; x++;		// 18
+		tris_list_float32View[y + x] = w[1]; x++;		// 19
+		tris_list_float32View[y + x] = w[2]; x++;		// 20
+		tris_list_float32View[y + x] = w[3]; x++;		// 21 always empty
 	}
 	
 	prim_list_buffer = new ArrayBuffer( n_primitives * 96 );
@@ -293,7 +375,7 @@ function loadObjects() {
 	prim_list_float32View = new Float32Array(prim_list_buffer);
 	
 	//filling array buffer with loaded objects
-	for(var i = 0; i < n_primitives; i++){
+	for(var i = 0; i < n_primitives; i++) {
 		var m_color = [0.0,0.0,0.0,0.0]; //Color m_color;
 		var m_refl = 0.0; //float m_refl;
 		var m_diff = 0.0; //float m_diff;
@@ -366,111 +448,6 @@ function loadObjects() {
 	}
 }
 
-/*function createPrimList(){
-	var lines = new Array();
-	var mHttpReq = new XMLHttpRequest();
-	mHttpReq.open("GET", sceneFileName, false);
-	mHttpReq.send(null);
-	var allText = mHttpReq.responseText; 
-	lines = allText.split("\n");
-	n_primitives = parseInt(lines[0]);
-	// create Buffer Array for entire prim_list arr
-	
-	prim_list_buffer = new ArrayBuffer( n_primitives * 96 );
-	// Create a new view that divides buffer to 32 bit float
-	prim_list_float32View = new Float32Array(prim_list_buffer);
-	prim_list_raw = new Array();
-	for(var i = 0; i < n_primitives; i++){
-		var a = lines[i+1].split(",");
-		prim_list_raw.push({ type: parseInt(a[0]), 
-							m_color_r: parseFloat(a[1]), 
-							m_color_g: parseFloat(a[2]), 
-							m_color_b: parseFloat(a[3]),
-							m_refl: parseFloat(a[4]), 
-							m_refr: parseFloat(a[5]),
-							m_refr_index: parseFloat(a[6]), 
-							m_diff: parseFloat(a[7]), 
-							m_spec: parseFloat(a[8]), 
-							light: parseInt(a[9]), 
-							center_normal_x: parseFloat(a[10]), 
-							center_normal_y: parseFloat(a[11]), 
-							center_normal_z: parseFloat(a[12]), 
-							radius_depth: parseFloat(a[13]), 
-							name: a[14]});			
-	}		
-	for(var i = 0; i < n_primitives; i++){
-		var m_color = [0.0,0.0,0.0,0.0]; //Color m_color;
-		var m_refl = 0.0; //float m_refl;
-		var m_diff = 0.0; //float m_diff;
-		var m_refr = 0.0; //float m_refr;
-		var m_refr_index = 0.0; //float m_refr_index;
-		var m_spec = 0.0; //float m_spec;
-		var dummy_3 = 0.0; //float dummy_3;
-		var type = 0.0; //prim_type type;
-		var is_light = 0.0; //bool is_light;
-		var normal = [0.0,0.0,0.0,0.0]; //float4 normal;
-		var center = [0.0,0.0,0.0,0.0]; //float4 center;
-		var depth = 0.0; //float depth;
-		var radius = 0.0; //float radius;
-		var sq_radius = 0.0; //float sq_radius;
-		var r_radius = 0.0; //float r_radius;
-		
-		m_color[0] = prim_list_raw[i].m_color_r;
-		m_color[1] = prim_list_raw[i].m_color_g;
-		m_color[2] = prim_list_raw[i].m_color_b;
-		m_refl = prim_list_raw[i].m_refl;
-		m_diff = prim_list_raw[i].m_diff;
-		m_refr = prim_list_raw[i].m_refr;
-		m_refr_index = prim_list_raw[i].m_refr_index;
-		m_spec = prim_list_raw[i].m_spec;			
-		
-		if(prim_list_raw[i].light == 1)
-			is_light = 1.0;
-		
-		type = prim_list_raw[i].type;	
-		if(type == 0){
-			normal[0] = prim_list_raw[i].center_normal_x;
-			normal[1] = prim_list_raw[i].center_normal_y;
-			normal[2] = prim_list_raw[i].center_normal_z;
-			depth = prim_list_raw[i].radius_depth;
-		}else{				
-			center[0] = prim_list_raw[i].center_normal_x;
-			center[1] = prim_list_raw[i].center_normal_y;
-			center[2] = prim_list_raw[i].center_normal_z;
-			radius = prim_list_raw[i].radius_depth;
-			sq_radius = radius * radius;
-			r_radius = (1.0 / radius);
-		}
-		
-		var x = 0;
-		var y = i * 24;
-		prim_list_float32View[y + x] = m_color[0]; x++;		// 0
-		prim_list_float32View[y + x] = m_color[1]; x++;		// 1
-		prim_list_float32View[y + x] = m_color[2]; x++;		// 2
-		prim_list_float32View[y + x] = m_color[3]; x++;		// 3 always empty
-		prim_list_float32View[y + x] = m_refl; x++;			// 4
-		prim_list_float32View[y + x] = m_diff; x++;			// 5
-		prim_list_float32View[y + x] = m_refr; x++;			// 6
-		prim_list_float32View[y + x] = m_refr_index; x++;	// 7
-		prim_list_float32View[y + x] = m_spec; x++;			// 8
-		prim_list_float32View[y + x] = dummy_3; x++;		// 9
-		prim_list_float32View[y + x] = type; x++;			// 10
-		prim_list_float32View[y + x] = is_light; x++;		// 11
-		prim_list_float32View[y + x] = normal[0]; x++;		// 12
-		prim_list_float32View[y + x] = normal[1]; x++;		// 13
-		prim_list_float32View[y + x] = normal[2]; x++;		// 14
-		prim_list_float32View[y + x] = normal[3]; x++;		// 15 always empty
-		prim_list_float32View[y + x] = center[0]; x++;		// 16
-		prim_list_float32View[y + x] = center[1]; x++;		// 17
-		prim_list_float32View[y + x] = center[2]; x++;		// 18
-		prim_list_float32View[y + x] = center[3]; x++;		// 19 always empty
-		prim_list_float32View[y + x] = depth; x++;			// 20
-		prim_list_float32View[y + x] = radius; x++;			// 21
-		prim_list_float32View[y + x] = sq_radius; x++;		// 22
-		prim_list_float32View[y + x] = r_radius; x++;		// 23		
-	}
-}*/
-
 function raytrace(refreshPrims) {
 	var deviceType = useDeviceType;
 	var deviceIndex = useDeviceIndex;
@@ -491,7 +468,7 @@ function raytrace(refreshPrims) {
 	
 	logMessage("Viewport dimensions: " + viewport_x + " x " + viewport_y);
 	
-	workItemSize = [1,1];
+	workItemSize = [16,8];
 	traceDepth = 5;
 	runCount = 1;
 	
@@ -539,9 +516,16 @@ function raytrace(refreshPrims) {
 		var bufSizeGlobalPrims = n_primitives * 96;
 		logMessage("Primitives buffer size: " + bufSizeGlobalPrims + " bytes");
 		
+		var bufSizeGlobalTris = n_triangles * 88; //3*4*float + 5*float + 1*float4 + dummy_3
+		logMessage("Triangles buffer size: " + bufSizeGlobalTris + " bytes");
+		
+		if(bufSizeGlobalPrims == 0) bufSizeGlobalPrims = 1;
+		if(bufSizeGlobalTris == 0) bufSizeGlobalTris = 1;
+		
 		var bufIn = cl.createBuffer(webcl.MEM_READ_ONLY, bufSizeImage);
 		var bufOut = cl.createBuffer(webcl.MEM_WRITE_ONLY, bufSizeImage);
 		var bufGlobalPrims = cl.createBuffer(webcl.MEM_READ_ONLY, bufSizeGlobalPrims);
+		var bufGlobalTris = cl.createBuffer(webcl.MEM_READ_ONLY, bufSizeGlobalTris);
 				
 		//setting kernel args
 		clKernel.setArg(0, bufIn);
@@ -561,10 +545,23 @@ function raytrace(refreshPrims) {
 		clKernel.setArg(10, new Int32Array([n_primitives]));
 		clKernel.setArg(11, new Uint32Array([bufSizeGlobalPrims]));
 		
+		//passing triangle buffer
+		//global_tris - triangle_t - [3][4]
+		clKernel.setArg(12, bufGlobalTris);
+		//n_tris - int
+		clKernel.setArg(13, new Int32Array([n_triangles]));
+		//local_tris - triangle_t - [3][4]
+		clKernel.setArg(14, new Uint32Array([bufSizeGlobalTris]));
+		
 		//queue in clQueue
 		//writing to memory
 		clQueue.enqueueWriteBuffer(bufIn, false, 0, bufSizeImage, pixels.data, []);
-		clQueue.enqueueWriteBuffer(bufGlobalPrims, false, 0, bufSizeGlobalPrims, prim_list_float32View, []);
+		if(bufSizeGlobalPrims != 1) {
+			clQueue.enqueueWriteBuffer(bufGlobalPrims, false, 0, bufSizeGlobalPrims, prim_list_float32View, []);
+		}
+		if(bufSizeGlobalTris != 1) {
+			clQueue.enqueueWriteBuffer(bufGlobalTris, false, 0, bufSizeGlobalTris, tris_list_float32View, []);
+		}
 		
 		//workgroup range
 		var localWS = [workItemSize[0], workItemSize[1]];

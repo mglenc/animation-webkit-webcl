@@ -146,6 +146,19 @@ typedef struct {
 	Color transparency;
 } Ray;
 
+typedef struct {
+	Color m_color;
+	float m_refl;
+	float m_diff;
+	float m_refr;
+	float m_refr_index;
+	float m_spec;
+	float dummy_3;
+	float4 v;
+	float4 u;
+	float4 w;
+} Triangle;
+
 /*triangle raytracer*/
 //
 // Copyright 2009 Syoyo Fujita.
@@ -169,19 +182,19 @@ typedef struct _triangle_t
     float v[3][4];  // (x,y,z,w) * 3
 } triangle_t;
 
-/*static inline float4
+inline float4
 mycross4(float4 a, float4 b, float4 c, float4 d)
 {
     return ((a * c) - (b * d));
 }
 
-static inline float4
+inline float4
 mydot4(float4 ax, float4 ay, float4 az, float4 bx, float4 by, float4 bz)
 {
     return (ax * bx + ay * by + az * bz);
 }
 
-static int4
+int4
 isect4(
     float4 *t_out,
     float4 *u_out,
@@ -204,7 +217,6 @@ isect4(
     const float4 det = mydot4(px, py, pz, tri.e1x, tri.e1y, tri.e1z);
     const float4 invdet = (float4)(1.0f) / det;
 
-
     const float4 qx = mycross4(tri.e1z, tri.e1y, sy, sz);
     const float4 qy = mycross4(tri.e1x, tri.e1z, sz, sx);
     const float4 qz = mycross4(tri.e1y, tri.e1y, sx, sy);
@@ -213,9 +225,7 @@ isect4(
     const float4 v = mydot4(ray.rdx, ray.rdy, ray.rdz, qx, qy, qz) * invdet;
     const float4 t = mydot4(tri.e2x, tri.e2y, tri.e2z, qx, qy, qz) * invdet;
 
-    int4 mask = (fabs(det) > veps) & ((u+v)  vzero) & (v > vzero)
-              & (t > vzero) & (t < ray.t);
-
+    int4 mask = (fabs(det) > veps) & ((u+v) > vzero) & (v > vzero) & (t > vzero) & (t < ray.t);
 
     (*t_out) = t;
     (*u_out) = u;
@@ -223,7 +233,7 @@ isect4(
 
     return mask;
 
-}*/
+}
 /*end triangle raytracer*/
 
 // functions
@@ -349,6 +359,27 @@ int raytrace(Ray * a_ray, Color * a_acc, float * a_dist, float4 * point_intersec
 	return prim_index;
 }
 
+/*triangle4_t get_normal(local Triangle * t) {
+	triangle_t tri;
+	triangle4_t tri4;
+	
+	tri.v[0] = t.v;
+	tri.v[1] = t.u;
+	tri.v[2] = t.w;
+	
+	tri4.v0x = (float4)(tri.v[0][0]);
+    tri4.v0y = (float4)(tri.v[0][1]);
+    tri4.v0z = (float4)(tri.v[0][2]);
+    tri4.e1x = (float4)(tri.v[1][0] - tri.v[0][0]);
+    tri4.e1y = (float4)(tri.v[1][1] - tri.v[0][1]);
+    tri4.e1z = (float4)(tri.v[1][2] - tri.v[0][2]);
+    tri4.e2x = (float4)(tri.v[2][0] - tri.v[0][0]);
+    tri4.e2y = (float4)(tri.v[2][1] - tri.v[0][1]);
+    tri4.e2z = (float4)(tri.v[2][2] - tri.v[0][2]);
+    
+    return tri4;
+}*/
+
 // raytracing kernel
 __kernel void raytracer_kernel ( __global uchar4 *inBuff,
 								__global uchar4 *outBuff, 
@@ -361,14 +392,27 @@ __kernel void raytracer_kernel ( __global uchar4 *inBuff,
 								float viewport_y,	
 								global float4 *global_prims, 		
 								int n_primitives,
-								local float4 *local_prims){
+								local float4 *local_prims,
+								
+								global float4 *global_tris,
+								int n_triangles,
+								local float4 *local_tris){
 	
 	// Copy primitives from global to local memory; GPU speedup was ~30% with n_primitives 64
-	event_t events[1];
+	event_t events[2];
 	events[0] = async_work_group_copy(local_prims, global_prims, (size_t) ((sizeof(Primitive) * n_primitives)/sizeof(float4)), 0);
 	wait_group_events(1, events);
 
+	events[1] = async_work_group_copy(local_tris, global_tris, (size_t) ((sizeof(Triangle) * n_triangles)/sizeof(float4)), 0);
+	wait_group_events(2, events);
+
 	local Primitive * primitives = (local Primitive *) local_prims;
+	
+	local Triangle * triangles = (local Triangle *) local_tris;
+	
+	//TO DO: count normal for every triangle
+	//TO DO: complex color data should be passed as one, not for every triangle
+	//36bytes saved on each triangle
 
 	// Determine this thread's pixel
 	int x = get_global_id(0);

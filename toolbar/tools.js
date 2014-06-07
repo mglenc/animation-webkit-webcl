@@ -8,7 +8,7 @@ Author: Michal Glenc
 uniqShapeId = 0;
 
 var running_log;
-var enable_log = false;
+var enable_log = true;
 
 function addComplex(properties) {
 	var newObj = scene.shapes.length;
