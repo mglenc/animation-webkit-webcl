@@ -1,9 +1,9 @@
-// JavaScript Document
-
 /* OpenCL Raytracing Kernel
  * For SE195B Project by:
  *	Cameron Brown
  *  Mark Becker
+ *
+ *	Extended with triangle intersection by Michal Glenc.
  */
 
 #ifdef DEBUGGING
@@ -33,6 +33,12 @@
 #define DOT(A, B) soft_dot(A, B)
 #endif
 
+#ifdef D_BUILTIN_CROSS
+#define CROSS(A, B) cross(A, B)
+#else
+#define CROSS(A, B) soft_cross(A, B)
+#endif
+
 #ifdef D_BUILTIN_LEN
 #define LENGTH(A) length(A)
 #else
@@ -46,6 +52,10 @@ float4 soft_normalize(float4 vec){
 
 float soft_dot(float4 vec_a, float4 vec_b){
 	return vec_a.x * vec_b.x + vec_a.y * vec_b.y + vec_a.z * vec_b.z;
+}
+
+float4 soft_cross(float4 vec_a, float4 vec_b){
+	return (float4) (vec_a.y*vec_b.z - vec_a.z*vec_b.y,vec_a.z*vec_b.x - vec_a.x*vec_b.z,vec_a.x*vec_b.y - vec_a.y*vec_b.x,0);
 }
 
 float soft_length(float4 vec){
@@ -119,6 +129,7 @@ typedef enum primtype {
 // OpenCL requires 16-byte alignment (ie 4 floats) for its vector data types. Without
 // the dummy_3 value, the Primitive struct will not copy from the host correctly.
 // See common.h for structure value information
+// IMPORTANT
 typedef struct {
 	Color m_color;
 	float m_refl;
@@ -140,7 +151,8 @@ typedef struct {
 	float4 direction;
 	float weight;
 	float depth;
-	int origin_primitive;
+	int origin_obj;
+	int origin_type;
 	ray_type type;
 	float r_index;
 	Color transparency;
@@ -153,6 +165,9 @@ typedef struct {
 	float m_refr;
 	float m_refr_index;
 	float m_spec;
+	//16-byte alignment fill
+	float dummy_1;
+	float dummy_2;
 	float dummy_3;
 	float4 v;
 	float4 u;
@@ -160,9 +175,6 @@ typedef struct {
 } Triangle;
 
 /*triangle raytracer*/
-//
-// Copyright 2009 Syoyo Fujita.
-//http://syoyo.wordpress.com/
 typedef struct _ray4_t
 {
     float4 rox, roy, roz;
@@ -182,57 +194,100 @@ typedef struct _triangle_t
     float v[3][4];  // (x,y,z,w) * 3
 } triangle_t;
 
-inline float4
-mycross4(float4 a, float4 b, float4 c, float4 d)
-{
+inline float4 mycross4(float4 a, float4 b, float4 c, float4 d) {
     return ((a * c) - (b * d));
 }
 
-inline float4
-mydot4(float4 ax, float4 ay, float4 az, float4 bx, float4 by, float4 bz)
-{
+inline float4 mydot4(float4 ax, float4 ay, float4 az, float4 bx, float4 by, float4 bz) {
     return (ax * bx + ay * by + az * bz);
 }
 
-int4
-isect4(
-    float4 *t_out,
-    float4 *u_out,
-    float4 *v_out,
-    ray4_t ray,
-    triangle4_t tri)
-{
-    const float4 px = mycross4(tri.e2z, tri.e2y, ray.rdy, ray.rdz);
-    const float4 py = mycross4(tri.e2x, tri.e2z, ray.rdz, ray.rdx);
-    const float4 pz = mycross4(tri.e2y, tri.e2x, ray.rdx, ray.rdy);
-
-    const float4 sx = ray.rox - tri.v0x;
-    const float4 sy = ray.roy - tri.v0y;
-    const float4 sz = ray.roz - tri.v0z;
-
-    const float4 vone  = (float4)(1.0f);
-    const float4 vzero = (float4)(0.0f);
-    const float4 veps  = (float4)(1.0e-6f);
-
-    const float4 det = mydot4(px, py, pz, tri.e1x, tri.e1y, tri.e1z);
-    const float4 invdet = (float4)(1.0f) / det;
-
-    const float4 qx = mycross4(tri.e1z, tri.e1y, sy, sz);
-    const float4 qy = mycross4(tri.e1x, tri.e1z, sz, sx);
-    const float4 qz = mycross4(tri.e1y, tri.e1y, sx, sy);
-
-    const float4 u = mydot4(sx, sy, sz, px, py, pz) * invdet;
-    const float4 v = mydot4(ray.rdx, ray.rdy, ray.rdz, qx, qy, qz) * invdet;
-    const float4 t = mydot4(tri.e2x, tri.e2y, tri.e2z, qx, qy, qz) * invdet;
-
-    int4 mask = (fabs(det) > veps) & ((u+v) > vzero) & (v > vzero) & (t > vzero) & (t < ray.t);
-
-    (*t_out) = t;
-    (*u_out) = u;
-    (*v_out) = v;
-
-    return mask;
-
+int triangle_intersect(local Triangle * t, Ray * ray, float * cumu_dist) {	
+	//Inside-out method
+	//TO DO: counting triangles normals before raytracing
+	//TO DO: checking if triangle clockwise before raytrace
+	//edges
+	/*t->v = (float4) (0.0, 5.0, 10.0, 0.0);
+	t->u = (float4) (-5.0, 5.0, 5.0, 0.0);
+	t->w = (float4) (5.0, 5.0, 5.0, 0.0 );*/
+	
+	/*float4 edge0 = t->u - t->v;
+	float4 edge1 = t->w - t->u;
+	float4 edge2 = t->v - t->w;
+    
+    float4 normal = CROSS( edge0, edge1 );
+    
+    //checing if vertices are in clockwise order
+    //TO DO: fix clockwise order
+    
+    float nDotRay = DOT(normal, ray->direction);
+    
+    //if triangle and ray are not parallel
+    if(nDotRay != 0) {
+    	float d = DOT(normal, t->v);
+    	float dist = - (DOT(normal, ray->origin) + d) / nDotRay;
+    	if (dist >= 0 && dist < *cumu_dist){
+    		//intersection point
+    		float4 p = ray->origin + dist * ray->direction;
+    	
+			//test if point is in triangle
+			float4 vp0 = p - t->v;
+			edge0 = t->u - t->v;
+			if(DOT(normal, CROSS(edge0, vp0)) < 0) {
+				return MISS;
+			}
+			
+			float4 vp1 = p - t->u;
+			edge1 = t->w - t->u;
+			if(DOT(normal, CROSS(edge1, vp1)) < 0) {
+				return MISS;
+			}
+			
+			float4 vp2 = p - t->w;
+			edge2 = t->v - t->w;
+			if(DOT(normal, CROSS(edge2, vp2)) < 0) {
+				return MISS;
+			}
+			
+			*cumu_dist = dist;
+			return HIT;
+		}
+    }*/
+    
+    //return MISS;
+    
+    //Moller Trumbore method
+    float4 edge1 = t->u - t->v;
+    float4 edge2 = t->w - t->v;
+    
+    float4 pvec = CROSS(ray->direction, edge2);
+    float det = DOT(edge1, pvec);
+    
+    if(det == 0) {
+    	return MISS;
+    }
+    
+    float invDet = 1.0 / det;
+    
+    float4 tvec = ray->origin - t->v;
+    float u = DOT(tvec, pvec) * invDet;
+    if(u < 0.0 || u > 1.0) {
+    	return MISS;
+    }
+    
+    float4 qvec = CROSS(tvec, edge1);
+    float v = DOT(ray->direction, qvec) * invDet;
+    if(v < 0.0 || u + v > 1.0) {
+    	return MISS;
+    }
+    
+    float dist = DOT(edge2, qvec) * invDet;
+    if (dist >= 0 && dist < *cumu_dist) {
+    	*cumu_dist = dist;
+    	return HIT;
+    }
+    
+    return MISS;
 }
 /*end triangle raytracer*/
 
@@ -295,24 +350,52 @@ float4 get_normal(local Primitive * p, float4 point){
 	return (float4) (0, 0, 0, 0);
 }
 
-int raytrace(Ray * a_ray, Color * a_acc, float * a_dist, float4 * point_intersect, int * result, local Primitive * primitives, int n_primitives){
-	*a_dist = MAXFLOAT;
-	int prim_index = -1;
+float4 get_triangle_normal(local Triangle * t, float4 point) {	
+    float e1x = (float)(t->u[0] - t->v[0]);
+    float e1y = (float)(t->u[1] - t->v[1]);
+    float e1z = (float)(t->u[2] - t->v[2]);
+    float e2x = (float)(t->w[0] - t->v[0]);
+    float e2y = (float)(t->w[1] - t->v[1]);
+    float e2z = (float)(t->w[2] - t->v[2]);
+    
+    return (float4) (e1x*e2x, e1y*e2y, e1z*e2z, 0);
+}
 
-	// find nearest intersection
-	for ( int s = 0; s < n_primitives; s++ ){
+int raytrace(Ray * a_ray, Color * a_acc, float * a_dist, float4 * point_intersect, int * result, local Primitive * primitives, int n_primitives, local Triangle * triangles, int n_triangles, int * obj_type){
+	*a_dist = MAXFLOAT;
+	int obj_index = -1;
+	
+	*obj_type = 1;
+	
+	// find nearest intersection primitives - primitives behind triangles
+	for (int s = 0; s < n_primitives; s++ ){
 		int res;
 		res = intersect(&primitives[s], a_ray, a_dist);
 		if (res){			
-			prim_index = s;
+			obj_index = s;
 			* result = res;
+			
+			* obj_type = 1;
 		}
 	}
+	
+	// find nearest intersection triangles
+	for ( int s = 0; s < n_triangles; s++ ){
+		int res;
+		res = triangle_intersect(&triangles[s], a_ray, a_dist);
+		if (res){			
+			obj_index = s;
+			* result = res;
+			
+			* obj_type = 2;
+		}
+	}
+	
 	// no hit
-	if (prim_index == -1) return -1;
+	if (obj_index == -1) return -1;
 	// handle hit
-	if (primitives[prim_index].is_light == 1.0f){
-		*a_acc = primitives[prim_index].m_color;
+	if (*obj_type == 1 && primitives[obj_index].is_light == 1.0f){
+		*a_acc = primitives[obj_index].m_color;
 	}else{
 		*point_intersect = a_ray->origin + (a_ray->direction * (*a_dist));
 		// trace lights
@@ -333,52 +416,61 @@ int raytrace(Ray * a_ray, Color * a_acc, float * a_dist, float4 * point_intersec
 						}
 						s++;
 					}
-				}
-				// Calculate diffuse shading
-				float4 N = get_normal(&primitives[prim_index], *point_intersect);
-				if (primitives[prim_index].m_diff > 0){
-					float dot_prod = DOT( N, L );
-					if (dot_prod > 0){
-						float diff = dot_prod * primitives[prim_index].m_diff * shade;
-						* a_acc += diff * primitives[prim_index].m_color * primitives[l].m_color;
+					
+					int t = 0;
+					while ( t < n_triangles ){
+						if (triangle_intersect(&triangles[t], &r, &L_LEN)){
+							shade = 0;
+						}
+						t++;
 					}
 				}
-				// Calculate specular shading
-				if (primitives[prim_index].m_spec > 0){
-					float4 V = a_ray->direction;
-					float4 R = L - 1.5f * DOT ( L, N ) * N;
-					float dot_prod = DOT ( V, R );
-					if (dot_prod > 0){
-						float spec = native_powr( dot_prod, 20 ) * primitives[prim_index].m_spec * shade;
-						* a_acc += spec * primitives[l].m_color;
+				
+				if(*obj_type == 1) {
+					// Calculate diffuse shading
+					float4 N = get_normal(&primitives[obj_index], *point_intersect);
+					if (primitives[obj_index].m_diff > 0){
+						float dot_prod = DOT( N, L );
+						if (dot_prod > 0){
+							float diff = dot_prod * primitives[obj_index].m_diff * shade;
+							* a_acc += diff * primitives[obj_index].m_color * primitives[l].m_color;
+						}
+					}
+					// Calculate specular shading
+					if (primitives[obj_index].m_spec > 0){
+						float4 V = a_ray->direction;
+						float4 R = L - 1.5f * DOT ( L, N ) * N;
+						float dot_prod = DOT ( V, R );
+						if (dot_prod > 0){
+							float spec = native_powr( dot_prod, 20 ) * primitives[obj_index].m_spec * shade;
+							* a_acc += spec * primitives[l].m_color;
+						}
+					}
+				} else if(*obj_type == 2) {
+					float4 N = get_triangle_normal(&triangles[obj_index], *point_intersect);
+					if (triangles[obj_index].m_diff > 0){
+						float dot_prod = DOT( N, L );
+						if (dot_prod > 0){
+							float diff = dot_prod * triangles[obj_index].m_diff * shade;
+							* a_acc += diff * triangles[obj_index].m_color * triangles[l].m_color;
+						}
+					}
+					// Calculate specular shading
+					if (triangles[obj_index].m_spec > 0){
+						float4 V = a_ray->direction;
+						float4 R = L - 1.5f * DOT ( L, N ) * N;
+						float dot_prod = DOT ( V, R );
+						if (dot_prod > 0){
+							float spec = native_powr( dot_prod, 20 ) * triangles[obj_index].m_spec * shade;
+							* a_acc += spec * triangles[l].m_color;
+						}
 					}
 				}
 			}
 		}
 	}
-	return prim_index;
+	return obj_index;
 }
-
-/*triangle4_t get_normal(local Triangle * t) {
-	triangle_t tri;
-	triangle4_t tri4;
-	
-	tri.v[0] = t.v;
-	tri.v[1] = t.u;
-	tri.v[2] = t.w;
-	
-	tri4.v0x = (float4)(tri.v[0][0]);
-    tri4.v0y = (float4)(tri.v[0][1]);
-    tri4.v0z = (float4)(tri.v[0][2]);
-    tri4.e1x = (float4)(tri.v[1][0] - tri.v[0][0]);
-    tri4.e1y = (float4)(tri.v[1][1] - tri.v[0][1]);
-    tri4.e1z = (float4)(tri.v[1][2] - tri.v[0][2]);
-    tri4.e2x = (float4)(tri.v[2][0] - tri.v[0][0]);
-    tri4.e2y = (float4)(tri.v[2][1] - tri.v[0][1]);
-    tri4.e2z = (float4)(tri.v[2][2] - tri.v[0][2]);
-    
-    return tri4;
-}*/
 
 // raytracing kernel
 __kernel void raytracer_kernel ( __global uchar4 *inBuff,
@@ -458,7 +550,8 @@ __kernel void raytracer_kernel ( __global uchar4 *inBuff,
 			r.direction = dir;
 			r.weight = 1.0f;
 			r.depth = 0;
-			r.origin_primitive = -1;
+			r.origin_obj = -1;
+			r.origin_type = -1;
 			r.type = ORIGIN;
 			r.r_index = 1.0f;
 			r.transparency = (Color) (1, 1, 1, 0);
@@ -473,15 +566,25 @@ __kernel void raytracer_kernel ( __global uchar4 *inBuff,
 				Color ray_col = (Color)( 0, 0, 0, 0 );
 				float4 point_intersect;
 				int result;
+				
+				//obj_index is object index in primitives or triangles array
+				int obj_index;
+				//primitive or triangle?
+				int obj_type = -1;
+				
 				// raytrace performs the actual tracing and returns useful information
-				int prim_index = raytrace( &cur_ray, &ray_col, &dist, &point_intersect, &result, primitives, n_primitives);
+				obj_index = raytrace( &cur_ray, &ray_col, &dist, &point_intersect, &result, primitives, n_primitives, triangles, n_triangles, &obj_type);
 				// reflected/refracted rays have different modifiers on the color of the object
 				switch ( cur_ray.type ){
 					case ORIGIN:
 						acc += ray_col * cur_ray.weight;
 						break;
 					case REFLECTED:
-						acc += ray_col * cur_ray.weight * primitives[cur_ray.origin_primitive].m_color * cur_ray.transparency;
+						if(cur_ray.origin_type == 1) {
+							acc += ray_col * cur_ray.weight * primitives[cur_ray.origin_obj].m_color * cur_ray.transparency;
+						} else if(cur_ray.origin_type == 2) {
+							acc += ray_col * cur_ray.weight * triangles[cur_ray.origin_obj].m_color * cur_ray.transparency;
+						}
 						break;
 					case REFRACTED:
 						acc += ray_col * cur_ray.weight * cur_ray.transparency;
@@ -490,9 +593,21 @@ __kernel void raytracer_kernel ( __global uchar4 *inBuff,
 				// handle reflection & refraction
 				if (cur_ray.depth < TRACEDEPTH){
 					// reflection
-					float refl = primitives[prim_index].m_refl;
+					float refl;
+					if(obj_type == 1) {
+						refl = primitives[obj_index].m_refl;
+					} else if(obj_type == 2) {
+						refl = triangles[obj_index].m_refl;
+					}
 					if (refl > 0.0f){
-						float4 N = get_normal(&primitives[prim_index], point_intersect);
+						
+						float4 N;
+						if(obj_type == 1) {
+							N = get_normal(&primitives[obj_index], point_intersect);
+						} else if(obj_type == 2) {
+							N = get_triangle_normal(&triangles[obj_index], point_intersect);
+						}
+						
 						float4 R = cur_ray.direction - 2.0f * DOT( cur_ray.direction, N ) * N;
 						Ray new_ray;
 						new_ray.origin = point_intersect + R * EPSILON;
@@ -500,17 +615,32 @@ __kernel void raytracer_kernel ( __global uchar4 *inBuff,
 						new_ray.depth = cur_ray.depth + 1;
 						new_ray.weight = refl * cur_ray.weight;
 						new_ray.type = REFLECTED;
-						new_ray.origin_primitive = prim_index;
+						new_ray.origin_obj = obj_index;
+						new_ray.origin_type = obj_type;
 						new_ray.r_index = cur_ray.r_index;
 						new_ray.transparency = cur_ray.transparency;
 						PUSH_RAY(queue, new_ray, back_ray_ptr, rays_in_queue)
 					}
 					// refraction
-					float refr = primitives[prim_index].m_refr;
+					float refr;
+					if(obj_type == 1) {
+						refr = primitives[obj_index].m_refr;
+					} else if(obj_type == 2) {
+						refr = triangles[obj_index].m_refr;
+					}
 					if (refr > 0.0f){
-						float m_rindex = primitives[prim_index].m_refr_index;
+						float m_rindex;
+						float4 N;
+						
+						if(obj_type == 1) {
+							m_rindex = primitives[obj_index].m_refr_index;
+							N = get_normal(&primitives[obj_index], point_intersect) * (float) result;
+						} else if(obj_type == 2) {
+							m_rindex = triangles[obj_index].m_refr_index;
+							N = get_triangle_normal(&triangles[obj_index], point_intersect) * (float) result;
+						}
+						
 						float n = cur_ray.r_index / m_rindex;
-						float4 N = get_normal(&primitives[prim_index], point_intersect) * (float) result;
 						float cosI = - DOT ( N, cur_ray.direction );
 						float cosT2 = 1.0f - n * n * (1.0f - cosI * cosI);
 						if (cosT2 > 0.0f){
@@ -521,9 +651,16 @@ __kernel void raytracer_kernel ( __global uchar4 *inBuff,
 							new_ray.depth = cur_ray.depth + 1;
 							new_ray.weight = cur_ray.weight;
 							new_ray.type = REFRACTED;
-							new_ray.origin_primitive = prim_index;
+							new_ray.origin_obj = obj_index;
+							new_ray.origin_type = obj_type;
 							new_ray.r_index = m_rindex;
-							new_ray.transparency = cur_ray.transparency * (exp(primitives[prim_index].m_color * 0.15f * (-dist)));
+							
+							if(obj_type == 1) {
+								new_ray.transparency = cur_ray.transparency * (exp(primitives[obj_index].m_color * 0.15f * (-dist)));
+							} else if(obj_type == 2) {
+								new_ray.transparency = cur_ray.transparency * (exp(triangles[obj_index].m_color * 0.15f * (-dist)));
+							}
+							
 							PUSH_RAY(queue, new_ray, back_ray_ptr, rays_in_queue)
 						}
 					}

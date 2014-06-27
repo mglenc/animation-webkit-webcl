@@ -79,13 +79,13 @@ function initSceneData() {
 				
 				switch(scene.shapes[selectedShapeId].type) {
 					case 'light':
-						scene.shapes[selectedShapeId][modif] += 0.25;
+						scene.shapes[selectedShapeId][modif] = parseFloat(scene.shapes[selectedShapeId][modif]) + 0.25;
 						break;
 					case 'sphere':
-						scene.shapes[selectedShapeId][modif] += 0.25;
+						scene.shapes[selectedShapeId][modif] = parseFloat(scene.shapes[selectedShapeId][modif]) + 0.25;
 					default:
 						for(i = 0; i < scene.shapes[selectedShapeId].vertexPosition.length; i++) {
-							scene.shapes[selectedShapeId].vertexPosition[i][modif] += 0.25;
+							scene.shapes[selectedShapeId].vertexPosition[i][modif] = parseFloat(scene.shapes[selectedShapeId].vertexPosition[i][modif]) + 0.25;
 						}
 						break;
 				}
@@ -148,13 +148,13 @@ function initSceneData() {
 				
 				switch(scene.shapes[selectedShapeId].type) {
 					case 'light':
-						scene.shapes[selectedShapeId][modif] -= 0.25;
+						scene.shapes[selectedShapeId][modif] = parseFloat(scene.shapes[selectedShapeId][modif]) - 0.25;
 						break;
 					case 'sphere':
-						scene.shapes[selectedShapeId][modif] -= 0.25;
+						scene.shapes[selectedShapeId][modif] = parseFloat(scene.shapes[selectedShapeId][modif]) - 0.25;
 					default:
 						for(i = 0; i < scene.shapes[selectedShapeId].vertexPosition.length; i++) {
-							scene.shapes[selectedShapeId].vertexPosition[i][modif] -= 0.25;
+							scene.shapes[selectedShapeId].vertexPosition[i][modif] = parseFloat(scene.shapes[selectedShapeId].vertexPosition[i][modif]) - 0.25;
 						}
 						break;
 				}

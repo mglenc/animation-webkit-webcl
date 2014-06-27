@@ -248,10 +248,10 @@ function loadObjects() {
 	n_triangles = 0;
 	prim_list_raw = new Array();
 	tris_list_raw = new Array();
-
-	for(i = 0; i < scene.shapes.length; i++) {
-		var currShape = scene.shapes[i];
 	
+	for(var i = 0; i < scene.shapes.length; i++) {
+		var currShape = scene.shapes[i];
+			
 		if(currShape.type == 'light') {
 			n_primitives++;
 			
@@ -293,8 +293,13 @@ function loadObjects() {
 			n_triangles_shape = currShape.vertexPosition.length/3;
 			n_triangles += currShape.vertexPosition.length/3;
 			
-			for(var i = 0; i < n_triangles_shape; i++) {
-				var tri_offset = i * 3;
+			for(var j = 0; j < n_triangles_shape; j++) {
+				var tri_offset = j * 3;
+				
+				/*console.log("v: " + parseFloat(currShape.vertexPosition[tri_offset].x) + " " + parseFloat(currShape.vertexPosition[tri_offset].y) + " " + parseFloat(currShape.vertexPosition[tri_offset].z));
+				console.log("u: " + parseFloat(currShape.vertexPosition[tri_offset+1].x) + " " + parseFloat(currShape.vertexPosition[tri_offset+1].y) + " " + parseFloat(currShape.vertexPosition[tri_offset+1].z));
+				console.log("w: " + parseFloat(currShape.vertexPosition[tri_offset+2].x) + " " + parseFloat(currShape.vertexPosition[tri_offset+2].y) + " " + parseFloat(currShape.vertexPosition[tri_offset+2].z));*/
+				
 				tris_list_raw.push({
 					m_color_r: parseFloat(currShape.acolor.r),
 					m_color_g: parseFloat(currShape.acolor.g),
@@ -304,15 +309,15 @@ function loadObjects() {
 					m_refr_index: parseFloat(currShape.refr_index), 
 					m_diff: parseFloat(currShape.diff), 
 					m_spec: parseFloat(currShape.spec), 
-					v: [currShape.vertexPosition[tri_offset].x, currShape.vertexPosition[tri_offset].y, currShape.vertexPosition[tri_offset].z, 0.0],
-					u: [currShape.vertexPosition[tri_offset+1].x, currShape.vertexPosition[tri_offset+1].y, currShape.vertexPosition[tri_offset+1].z, 0.0],
-					w: [currShape.vertexPosition[tri_offset+2].x, currShape.vertexPosition[tri_offset+2].y, currShape.vertexPosition[tri_offset+2].z, 0.0],
+					v: [parseFloat(currShape.vertexPosition[tri_offset].x), parseFloat(currShape.vertexPosition[tri_offset].y), parseFloat(parseFloat(currShape.vertexPosition[tri_offset].z) + zConst), 0.0],
+					u: [parseFloat(currShape.vertexPosition[tri_offset+1].x), parseFloat(currShape.vertexPosition[tri_offset+1].y), parseFloat(parseFloat(currShape.vertexPosition[tri_offset+1].z) + zConst), 0.0],
+					w: [parseFloat(currShape.vertexPosition[tri_offset+2].x), parseFloat(currShape.vertexPosition[tri_offset+2].y), parseFloat(parseFloat(currShape.vertexPosition[tri_offset+2].z) + zConst), 0.0],
 					name: currShape.name});
 			}			
 		}
 	}
 	
-	tris_list_buffer = new ArrayBuffer( n_triangles * 88 );
+	tris_list_buffer = new ArrayBuffer( n_triangles * 96 );
 	
 	//create a new view that divides buffer to 32 bit float
 	tris_list_float32View = new Float32Array(tris_list_buffer);
@@ -326,11 +331,29 @@ function loadObjects() {
 		var m_refr_index = 0.0; //float m_refr_index;
 		var m_spec = 0.0; //float m_spec;
 	
+		var dummy_1 = 0.0; //float dummy_3;
+		var dummy_2 = 0.0; //float dummy_3;
 		var dummy_3 = 0.0; //float dummy_3;
 	
-		var v = tris_list_raw[i].v;
+		/*var v = tris_list_raw[i].v;
 		var u = tris_list_raw[i].u;
-		var w = tris_list_raw[i].w;
+		var w = tris_list_raw[i].w;*/
+		
+		var v = [0.0,0.0,0.0,0.0];
+		var u = [0.0,0.0,0.0,0.0];
+		var w = [0.0,0.0,0.0,0.0];
+		
+		v[0] = tris_list_raw[i].v[0];
+		v[1] = tris_list_raw[i].v[1];
+		v[2] = tris_list_raw[i].v[2];
+		
+		u[0] = tris_list_raw[i].u[0];
+		u[1] = tris_list_raw[i].u[1];
+		u[2] = tris_list_raw[i].u[2];
+		
+		w[0] = tris_list_raw[i].w[0];
+		w[1] = tris_list_raw[i].w[1];
+		w[2] = tris_list_raw[i].w[2];
 	
 		m_color[0] = tris_list_raw[i].m_color_r;
 		m_color[1] = tris_list_raw[i].m_color_g;
@@ -342,7 +365,7 @@ function loadObjects() {
 		m_spec = tris_list_raw[i].m_spec;	
 		
 		var x = 0;
-		var y = i * 22;
+		var y = i * 24;
 	
 		tris_list_float32View[y + x] = m_color[0]; x++;		// 0
 		tris_list_float32View[y + x] = m_color[1]; x++;		// 1
@@ -353,20 +376,22 @@ function loadObjects() {
 		tris_list_float32View[y + x] = m_refr; x++;			// 6
 		tris_list_float32View[y + x] = m_refr_index; x++;	// 7
 		tris_list_float32View[y + x] = m_spec; x++;			// 8
-		tris_list_float32View[y + x] = dummy_3; x++;		// 9
+		tris_list_float32View[y + x] = dummy_1; x++;		// 9
+		tris_list_float32View[y + x] = dummy_2; x++;		// 10
+		tris_list_float32View[y + x] = dummy_3; x++;		// 11
 
-		tris_list_float32View[y + x] = v[0]; x++;		// 10
-		tris_list_float32View[y + x] = v[1]; x++;		// 11
-		tris_list_float32View[y + x] = v[2]; x++;		// 12
-		tris_list_float32View[y + x] = v[3]; x++;		// 13 always empty
-		tris_list_float32View[y + x] = u[0]; x++;		// 14
-		tris_list_float32View[y + x] = u[1]; x++;		// 15
-		tris_list_float32View[y + x] = u[2]; x++;		// 16
-		tris_list_float32View[y + x] = u[3]; x++;		// 17 always empty
-		tris_list_float32View[y + x] = w[0]; x++;		// 18
-		tris_list_float32View[y + x] = w[1]; x++;		// 19
-		tris_list_float32View[y + x] = w[2]; x++;		// 20
-		tris_list_float32View[y + x] = w[3]; x++;		// 21 always empty
+		tris_list_float32View[y + x] = v[0]; x++;		// 12
+		tris_list_float32View[y + x] = v[1]; x++;		// 13
+		tris_list_float32View[y + x] = v[2]; x++;		// 14
+		tris_list_float32View[y + x] = v[3]; x++;		// 15 always empty
+		tris_list_float32View[y + x] = u[0]; x++;		// 16
+		tris_list_float32View[y + x] = u[1]; x++;		// 17
+		tris_list_float32View[y + x] = u[2]; x++;		// 18
+		tris_list_float32View[y + x] = u[3]; x++;		// 19 always empty
+		tris_list_float32View[y + x] = w[0]; x++;		// 20
+		tris_list_float32View[y + x] = w[1]; x++;		// 21
+		tris_list_float32View[y + x] = w[2]; x++;		// 22
+		tris_list_float32View[y + x] = w[3]; x++;		// 23 always empty
 	}
 	
 	prim_list_buffer = new ArrayBuffer( n_primitives * 96 );
@@ -461,6 +486,9 @@ function raytrace(refreshPrims) {
 	screenWidth = $(canvas).width();
 	screenHeight = $(canvas).height();
 	
+	//screenWidth = 1600;
+	//screenHeight = 1200;
+	
 	//auto filling values
 	//TO DO: separate window with width and height set in properties
 	viewport_x = screenWidth/100.0;
@@ -516,7 +544,7 @@ function raytrace(refreshPrims) {
 		var bufSizeGlobalPrims = n_primitives * 96;
 		logMessage("Primitives buffer size: " + bufSizeGlobalPrims + " bytes");
 		
-		var bufSizeGlobalTris = n_triangles * 88; //3*4*float + 5*float + 1*float4 + dummy_3
+		var bufSizeGlobalTris = n_triangles * 96; //3*4*float + 5*float + 1*float4 + dummy_3, 4*16 + 8*4
 		logMessage("Triangles buffer size: " + bufSizeGlobalTris + " bytes");
 		
 		if(bufSizeGlobalPrims == 0) bufSizeGlobalPrims = 1;
@@ -591,10 +619,11 @@ function raytrace(refreshPrims) {
 		
 		var endTime = Date.now();
 		var runTime = (endTime - startTime)/1000;
-		runTime /= runCount;
 		
 		canvasCtx.putImageData(pixels, 0, 0);
-		logMessage("Finished raytracing, runtime: " + runTime.toFixed(3) + "s");
+		logMessage("All runtime: " + runTime.toFixed(3) + "s");
+		runTime /= runCount;
+		logMessage("Finished raytracing, single runtime: " + runTime.toFixed(3) + "s");
 	} catch(e) {
 		var log = "Raytracing failed. Error: " + e.message;
 		alert(log);

@@ -112,7 +112,7 @@ function addComplex(properties) {
 	if(properties != undefined && properties['refr'] != undefined && properties['refr'] != "")
 		scene.shapes[newObj].refr = properties['refr'];
 	else
-		scene.shapes[newObj].refr = 0.8;
+		scene.shapes[newObj].refr = 0;
 		
 	if(properties != undefined && properties['refr_index'] != undefined && properties['refr_index'] != "")
 		scene.shapes[newObj].refr_index = properties['refr_index'];
@@ -122,7 +122,7 @@ function addComplex(properties) {
 	if(properties != undefined && properties['diff'] != undefined && properties['diff'] != "")
 		scene.shapes[newObj].diff = properties['diff'];
 	else
-		scene.shapes[newObj].diff = 0.0;
+		scene.shapes[newObj].diff = 2.0;
 		
 		if(properties != undefined && properties['spec'] != undefined && properties['spec'] != "")
 		scene.shapes[newObj].spec = properties['spec'];
@@ -294,7 +294,7 @@ function addSphere(properties) {
 	if(properties != undefined && properties['refr'] != undefined && properties['refr'] != "")
 		scene.shapes[newObj].refr = properties['refr'];
 	else
-		scene.shapes[newObj].refr = 0.8;
+		scene.shapes[newObj].refr = 0;
 		
 	if(properties != undefined && properties['refr_index'] != undefined && properties['refr_index'] != "")
 		scene.shapes[newObj].refr_index = properties['refr_index'];
@@ -403,56 +403,67 @@ function initShapes() {
 		  -1.0,  1.0,  1.0,
 		  -1.0,  1.0, -1.0,
 		];
-			
+					
 		var vertices = [
+			{x:cv[6], y:cv[7], z:cv[8]},
 			{x:cv[0], y:cv[1], z:cv[2]},
 			{x:cv[3], y:cv[4], z:cv[5]},
-			{x:cv[6], y:cv[7], z:cv[8]},
 			
 			{x:cv[0], y:cv[1], z:cv[2]},
 			{x:cv[6], y:cv[7], z:cv[8]},
 			{x:cv[9], y:cv[10], z:cv[11]},
 			
 			{x:cv[12], y:cv[13], z:cv[14]},
-			{x:cv[15], y:cv[16], z:cv[17]},
 			{x:cv[18], y:cv[19], z:cv[20]},
+			{x:cv[15], y:cv[16], z:cv[17]},
 			
-			{x:cv[12], y:cv[13], z:cv[14]},
 			{x:cv[18], y:cv[19], z:cv[20]},
 			{x:cv[21], y:cv[22], z:cv[23]},
+			{x:cv[12], y:cv[13], z:cv[14]},
 			
 			{x:cv[24], y:cv[25], z:cv[26]},
-			{x:cv[27], y:cv[28], z:cv[29]},
-			{x:cv[30], y:cv[31], z:cv[32]},
-			
-			{x:cv[24], y:cv[25], z:cv[26]},
-			{x:cv[30], y:cv[31], z:cv[32]},
 			{x:cv[33], y:cv[34], z:cv[35]},
+			{x:cv[30], y:cv[31], z:cv[32]},
 			
+			{x:cv[24], y:cv[25], z:cv[26]},
+			{x:cv[30], y:cv[31], z:cv[32]},
+			{x:cv[27], y:cv[28], z:cv[29]},
+			
+			{x:cv[42], y:cv[43], z:cv[44]},
 			{x:cv[36], y:cv[37], z:cv[38]},
 			{x:cv[39], y:cv[40], z:cv[41]},
-			{x:cv[42], y:cv[43], z:cv[44]},
 			
 			{x:cv[36], y:cv[37], z:cv[38]},
-			{x:cv[42], y:cv[43], z:cv[44]},
 			{x:cv[45], y:cv[46], z:cv[47]},
+			{x:cv[42], y:cv[43], z:cv[44]},
 			
 			{x:cv[48], y:cv[49], z:cv[50]},
+			{x:cv[54], y:cv[55], z:cv[56]},
 			{x:cv[51], y:cv[52], z:cv[53]},
-			{x:cv[54], y:cv[55], z:cv[56]},
 			
 			{x:cv[48], y:cv[49], z:cv[50]},
-			{x:cv[54], y:cv[55], z:cv[56]},
 			{x:cv[57], y:cv[58], z:cv[59]},
+			{x:cv[54], y:cv[55], z:cv[56]},
 			
+			{x:cv[66], y:cv[67], z:cv[68]},
 			{x:cv[60], y:cv[61], z:cv[62]},
 			{x:cv[63], y:cv[64], z:cv[65]},
-			{x:cv[66], y:cv[67], z:cv[68]},
 			
 			{x:cv[60], y:cv[61], z:cv[62]},
-			{x:cv[66], y:cv[67], z:cv[68]},
-			{x:cv[69], y:cv[70], z:cv[71]}
+			{x:cv[69], y:cv[70], z:cv[71]},
+			{x:cv[66], y:cv[67], z:cv[68]}
+			
 		];
+		
+		/*var vertices = [
+			{x: 0.0, y: 5.0, z: 10.0},
+			{x: -5.0, y: 5.0, z: 5.0},
+			{x: 5.0, y: 5.0, z: 5.0}
+		];*/
+		
+		console.log("girl vertices load before!");
+		
+		var vertices = girlVertex();
 		
 		var newObj = addComplex({vertices: vertices});
 		
@@ -461,7 +472,7 @@ function initShapes() {
 		//setting selectedShape
 		selectShape(newObj);
 		
-		//no need to refresh scene, cause it is done already in selectShape
+		//no need to refresh scene, cause it is done already in selectShape		
 	});
 	
 	$(".tools#shapes-dialog .button#light").click(function() {
@@ -2963,5 +2974,57 @@ function initTools() {
 	initImport();
 	initSettings();
 	initLog();
+	
+	//adding test objects
+	/*var properties = new Object();
+	
+	addLight();
+	
+	properties['x'] = -7.0;
+	properties['acolor'] = new Object();
+	properties['acolor'].r = 0.2;
+	properties['acolor'].g = 0.5;
+	properties['acolor'].b = 0.7;
+	addLight(properties);
+	
+	properties['x'] = 0.0;
+	properties['y'] = -20.0;
+	properties['r'] = 15.0;
+	properties['refl'] = 1.0;
+	properties['acolor'] = new Object();
+	properties['acolor'].r = 0.7;
+	properties['acolor'].g = 0.7;
+	properties['acolor'].b = 0.7;
+	addSphere(properties);
+	
+	properties['y'] = 0.0;
+	properties['x'] = -3.0;
+	properties['r'] = 2;
+	properties['refl'] = 0.5;
+	properties['acolor'] = new Object();
+	properties['acolor'].r = 0.5;
+	properties['acolor'].g = 0.1;
+	properties['acolor'].b = 0.0;
+	addSphere(properties);
+	
+	properties['y'] = 0.0;
+	properties['x'] = 3.5;
+	properties['r'] = 1.0;
+	properties['refl'] = 0.5;
+	properties['acolor'] = new Object();
+	properties['acolor'].r = 1.0;
+	properties['acolor'].g = 0.75;
+	properties['acolor'].b = 0.0;
+	addSphere(properties)*/
+}
+
+function girlVertex() {
+	console.log("started loading custom vertex!");
+
+	var vertex = [];
+	
+	console.log("finished loading custom vertex!");
+	
+	return vertex;
 }
 

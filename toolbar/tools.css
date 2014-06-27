@@ -502,3 +502,9 @@ table#vertices div.down {
 .settings-dialog #gpu-devices li, .settings-dialog #cpu-devices li {
 	list-style: none;
 }
+
+/*Log dialog*/
+.log-dialog .ui-dialog-title {
+	background: url("./images/log_dialog_title.png");
+	width: 19px;
+}
